@@ -13,7 +13,7 @@ export const HeroSection = () => {
           Build your digital wardrobe, showcase your style, and turn your closet
           into a marketplace.
         </p>
-        <button className="p-4 bg-amber-500 w-fit rounded-lg font-bold text-lg hover:bg-amber-600 hover:cursor-pointer transition-all ease-in-out duration-150">
+        <button className="p-4 text-black bg-amber-500 w-fit rounded-lg font-bold text-lg hover:bg-amber-600 hover:cursor-pointer transition-all ease-in-out duration-150">
           Create your wardrobe now
         </button>
       </div>

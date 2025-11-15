@@ -1,12 +1,17 @@
 import foldingClothes from "../../assets/images/foldingClothes.jpg";
+import { motion } from "motion/react";
 
 export const MainFeatureSection = () => {
   return (
-    <section className="flex items-center p-20 gap-10 h-dvh max-h-[800px]">
+    <motion.section
+      initial={{ opacity: 0, translateY: 20 }}
+      whileInView={{ opacity: 1, translateY: 0, transition: { duration: 1 } }}
+      className="flex items-center p-14 gap-10 max-h-[800px]"
+    >
       <img
         src={foldingClothes}
         alt="individual folding clothes"
-        className="w-1/2 rounded object-cover shadow-lg"
+        className="w-1/2 rounded object-cover shadow-lg h-[450px"
       />
       <div className="flex flex-col gap-4 w-1/2">
         <h2 className="font-bold text-4xl">Your Wardrobe, Reimagined.</h2>
@@ -28,6 +33,6 @@ export const MainFeatureSection = () => {
           Add To Your Wardrobe
         </button>
       </div>
-    </section>
+    </motion.section>
   );
 };
