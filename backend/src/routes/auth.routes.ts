@@ -1,34 +1,69 @@
 import { Router } from "express";
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { pool } from "../db/pool";
-import { RowDataPacket } from "mysql2";
 import "dotenv/config";
+import bcrypt from "bcrypt";
+import { RowDataPacket, ResultSetHeader } from "mysql2";
+
+const SALT_ROUNDS = 10;
 
 interface UserRow extends RowDataPacket {
   id: number;
   password_hash: string;
 }
-
-const SALT_ROUNDS = 10;
+interface ExistingUser extends RowDataPacket {
+  id: number;
+}
+interface JwtPayload {
+  userId: number;
+}
 
 const router = Router();
 
 router.post("/register", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, username, password } = req.body;
 
+  // Basic validation
+  if (!email || !username || !password) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  // Check for existing user
+  const [existing] = await pool.query<ExistingUser[]>(
+    `SELECT id FROM users WHERE email = ? OR username = ?`,
+    [email, username],
+  );
+
+  if (existing.length > 0) {
+    return res.status(409).json({
+      error: "Email or username already in use",
+    });
+  }
+
+  // Hash password
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  await pool.query("INSERT INTO users (email, password_hash) VALUES (?, ?)", [
-    email,
-    passwordHash,
-  ]);
+  // Insert user
+  const [result] = await pool.query<ResultSetHeader>(
+    `INSERT INTO users (email, username, password_hash)
+     VALUES (?, ?, ?)`,
+    [email, username, passwordHash],
+  );
 
-  res.status(201).json({ message: "User created" });
+  res.status(201).json({
+    message: "User registered successfully",
+    userId: result.insertId,
+  });
 });
 
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
-router.post("/auth/login", async (req, res) => {
+// Ensure JWT_SECRET is set
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET is not set");
+}
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// Login route
+router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   const [rows] = await pool.query<UserRow[]>(
@@ -57,6 +92,26 @@ router.post("/auth/login", async (req, res) => {
   });
 
   res.json({ message: "Logged in" });
+});
+
+// Verify current user
+router.get("/me", (req, res) => {
+  const token = req.cookies?.token;
+
+  if (!token) {
+    return res.status(401).json({ authenticated: false });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+
+    res.json({
+      authenticated: true,
+      userId: decoded.userId,
+    });
+  } catch {
+    res.status(401).json({ authenticated: false });
+  }
 });
 
 export default router;
