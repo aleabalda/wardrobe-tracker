@@ -18,6 +18,7 @@ export const Layout = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.authenticated) {
+          console.log("User is authenticated:", data);
           setAuth({
             userId: data.userId,
             isAuthenticated: true,
@@ -34,7 +35,7 @@ export const Layout = () => {
   }, []);
   return (
     <div>
-      <Header></Header>
+      <Header auth={auth}></Header>
       <div>{auth?.userId}</div>
       <main>
         <Outlet />
