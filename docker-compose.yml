@@ -1,0 +1,22 @@
+services:
+  db:
+    image: mysql:8
+    restart: always
+    env_file:
+      - ./backend/.env
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+
+  backend:
+    build: ./backend
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+
+volumes:
+  db_data:
