@@ -12,7 +12,7 @@ export const Header = ({ auth }: { auth: AuthState | undefined }) => {
     <header className="flex items-center justify-between p-6">
       <h1 className="font-bold text-4xl">Wardrobe.io</h1>
       {auth?.isAuthenticated ? (
-        <div>Welcome user!</div>
+        <div className="rounded-full w-8 h-8 bg-amber-500"></div>
       ) : (
         <div className="flex gap-4">
           <button

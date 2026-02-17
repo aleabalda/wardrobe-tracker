@@ -4,6 +4,7 @@ import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home/Home";
 import { Login } from "./pages/Auth/Login";
 import { Register } from "./pages/Auth/Register";
+import { Wardrobe } from "./pages/WardrobeList/Wardrobe";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/wardrobe" element={<Wardrobe />} />
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

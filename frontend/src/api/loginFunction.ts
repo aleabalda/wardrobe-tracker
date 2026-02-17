@@ -9,7 +9,7 @@ export async function login(data: LoginRequest) {
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include", // 🔥 THIS IS REQUIRED
+    credentials: "include",
     body: JSON.stringify(data),
   });
 

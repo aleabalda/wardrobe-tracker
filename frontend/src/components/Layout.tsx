@@ -36,7 +36,6 @@ export const Layout = () => {
   return (
     <div>
       <Header auth={auth}></Header>
-      <div>{auth?.userId}</div>
       <main>
         <Outlet />
       </main>

@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS `clothing_items` (
     `size` VARCHAR(20),
     `price` DECIMAL(10,2),
     `description` TEXT,
+    `image_url` VARCHAR(255),
     `is_for_sale` BOOLEAN DEFAULT FALSE,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
