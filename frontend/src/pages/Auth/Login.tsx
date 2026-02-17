@@ -17,7 +17,7 @@ export const Login = () => {
     try {
       await login({ email, password });
       console.log("Logged in!");
-      nav("/");
+      nav("/wardrobe");
       // redirect or update auth state here
     } catch (err) {
       setError((err as Error).message);

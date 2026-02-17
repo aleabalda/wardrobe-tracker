@@ -3,10 +3,19 @@ services:
     image: mysql:8
     restart: always
     env_file:
-      - ./backend/.env
+      - ./database/.env
     volumes:
       - db_data:/var/lib/mysql
       - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 30
 
   backend:
     build: ./backend
@@ -16,7 +25,8 @@ services:
     env_file:
       - ./backend/.env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
     build: ./frontend
