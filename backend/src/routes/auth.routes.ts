@@ -87,11 +87,22 @@ router.post("/login", async (req, res) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: true,
-    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
   });
 
   res.json({ message: "Logged in" });
+});
+
+// Logout route
+router.post("/logout", (_req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
+  return res.json({ message: "Logged out" });
 });
 
 // Verify current user
