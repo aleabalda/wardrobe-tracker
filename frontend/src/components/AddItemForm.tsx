@@ -8,11 +8,9 @@ export const AddItemForm = ({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [brand, setBrand] = useState("");
-  const [price, setPrice] = useState(0);
   const [type, setType] = useState("");
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
-  const [isForSale, setIsForSale] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,14 +26,12 @@ export const AddItemForm = ({
     formData.append("name", name);
     formData.append("description", description);
     formData.append("brand", brand);
-    formData.append("price", String(price));
     formData.append("type", type);
     formData.append("color", color);
     formData.append("size", size);
-    formData.append("isForSale", String(isForSale));
 
     try {
-      const res = await fetch("http://localhost:3000/api/clothing", {
+      const res = await fetch("http://localhost:3000/api/clothing/add", {
         method: "POST",
         body: formData,
       });
@@ -59,9 +55,11 @@ export const AddItemForm = ({
       <h2 className="text-xl font-bold mb-4">Add New Clothing Item</h2>
       <div className="grid grid-cols-2 gap-6">
         <div>
-          <label htmlFor="name">Name:</label>
+          <label htmlFor="name" className="hidden">
+            Name:
+          </label>
           <input
-            className="p-2 bg-gray-100 w-full"
+            className="p-3 outline-1 outline-gray-400 rounded w-full"
             type="text"
             name="name"
             placeholder="Enter item name"
@@ -70,9 +68,11 @@ export const AddItemForm = ({
           />
         </div>
         <div>
-          <label htmlFor="description">Description:</label>
+          <label htmlFor="description" className="hidden">
+            Description:
+          </label>
           <input
-            className="p-2 bg-gray-100 w-full"
+            className="p-3 w-full rounded outline-1 outline-gray-400"
             type="text"
             name="description"
             placeholder="Enter item description"
@@ -81,9 +81,11 @@ export const AddItemForm = ({
           />
         </div>
         <div>
-          <label htmlFor="brand">Brand:</label>
+          <label htmlFor="brand" className="hidden">
+            Brand:
+          </label>
           <input
-            className="p-2 bg-gray-100 w-full"
+            className="p-3 w-full rounded outline-1 outline-gray-400"
             type="text"
             name="brand"
             placeholder="Enter item brand"
@@ -92,20 +94,11 @@ export const AddItemForm = ({
           />
         </div>
         <div>
-          <label htmlFor="price">Price:</label>
+          <label htmlFor="type" className="hidden">
+            Type:
+          </label>
           <input
-            className="p-2 bg-gray-100 w-full"
-            type="number"
-            name="price"
-            placeholder="Enter item price"
-            value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
-          />
-        </div>
-        <div>
-          <label htmlFor="type">Type:</label>
-          <input
-            className="p-2 bg-gray-100 w-full"
+            className="p-3 w-full rounded outline-1 outline-gray-400"
             type="text"
             name="type"
             placeholder="Enter item type"
@@ -114,9 +107,11 @@ export const AddItemForm = ({
           />
         </div>
         <div>
-          <label htmlFor="color">Color:</label>
+          <label htmlFor="color" className="hidden">
+            Color:
+          </label>
           <input
-            className="p-2 bg-gray-100 w-full"
+            className="p-3 w-full rounded outline-1 outline-gray-400"
             type="text"
             name="color"
             placeholder="Enter item color"
@@ -125,9 +120,11 @@ export const AddItemForm = ({
           />
         </div>
         <div>
-          <label htmlFor="size">Size:</label>
+          <label htmlFor="size" className="hidden">
+            Size:
+          </label>
           <input
-            className="p-2 bg-gray-100 w-full"
+            className="p-3 w-full rounded outline-1 outline-gray-400"
             type="text"
             name="size"
             placeholder="Enter item size"
@@ -135,18 +132,10 @@ export const AddItemForm = ({
             onChange={(e) => setSize(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <label htmlFor="is_for_sale">For Sale:</label>
-          <input
-            type="checkbox"
-            name="is_for_sale"
-            checked={isForSale}
-            onChange={(e) => setIsForSale(e.target.checked)}
-          />
-        </div>
         <div>
-          <label htmlFor="clothing-item">Choose a picture:</label>
-
+          <label htmlFor="clothing-item" className="hidden">
+            Choose a picture:
+          </label>
           <input
             type="file"
             id="clothing-item"

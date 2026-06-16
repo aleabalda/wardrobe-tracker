@@ -10,7 +10,7 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-router.post("/clothing", upload.single("image"), async (req, res) => {
+router.post("/add", upload.single("image"), async (req, res) => {
   // var used to track if image was uploaded to cloudinary so we can delete if DB insert fails
   let uploadedImagePublicId: string | null = null;
 
