@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { pool } from "../db/pool";
+import { verifyToken } from "../middleware/auth";
 
 const router = Router();
 
@@ -10,43 +11,36 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-router.post("/add", upload.single("image"), async (req, res) => {
-  // var used to track if image was uploaded to cloudinary so we can delete if DB insert fails
+router.post("/add", verifyToken, upload.single("image"), async (req, res) => {
   let uploadedImagePublicId: string | null = null;
 
   try {
-    // return if no image is provided
     if (!req.file) {
       return res.status(400).json({ message: "Image is required" });
     }
 
-    // get user id to ensure user is authenticated and for cloudinary folder structure
     const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // parsing req body
     const { name, brand, type, color, size, price, description, isForSale } =
       req.body;
 
-    // basic validation if missing name or type
     if (!name || !type) {
       return res.status(400).json({
         message: "Name and type are required",
       });
     }
 
-    // upload the image to cloudinary under the users id folder
     const uploadResult = await cloudinary.uploader.upload(req.file.path, {
       folder: `wardrobe/${userId}`,
     });
 
-    // set the upload id if successful and image url for db
     uploadedImagePublicId = uploadResult.public_id;
     const imageUrl = uploadResult.secure_url;
+    console.log(imageUrl);
 
-    // insert into db
     const [result] = await pool.execute(
       `
         INSERT INTO clothing_items (
@@ -73,15 +67,16 @@ router.post("/add", upload.single("image"), async (req, res) => {
         price ? Number(price) : null,
         description || null,
         imageUrl,
-        isForSale === "true" || isForSale === true,
       ],
     );
 
+    console.log("Database insert result:", result);
     res.status(201).json({
       id: (result as any).insertId,
       name,
       imageUrl,
     });
+    console.log("Clothing item created with ID:", (result as any).insertId);
   } catch (err) {
     console.error(err);
 
@@ -92,6 +87,27 @@ router.post("/add", upload.single("image"), async (req, res) => {
 
     res.status(500).json({
       message: "Failed to create clothing item",
+    });
+  }
+});
+
+router.get("/get", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const [rows] = await pool.execute(
+      "SELECT * FROM clothing_items WHERE user_id = ?",
+      [userId],
+    );
+
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Failed to fetch clothing items",
     });
   }
 });

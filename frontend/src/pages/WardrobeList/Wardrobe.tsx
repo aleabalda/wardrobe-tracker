@@ -1,25 +1,50 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AddItemForm } from "../../components/AddItemForm";
 import AddIcon from "@mui/icons-material/Add";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import SortIcon from "@mui/icons-material/Sort";
 
+interface ClothingItem {
+  id: number;
+  name: string;
+  description: string;
+  brand: string;
+  type: string;
+  color: string;
+  size: string;
+  price: number | null;
+  is_for_sale: boolean;
+  imageUrl: string;
+}
+
 export const Wardrobe = () => {
   const [addingItem, setAddingItem] = useState<boolean>(false);
+  const [clothingItems, setClothingItems] = useState<ClothingItem[]>([]);
 
-  // interface ClothingItem {
-  //   name: string;
-  //   description: string;
-  //   brand: string;
-  //   price: number;
-  //   type: string;
-  //   color: string;
-  //   size: string;
-  //   is_for_sale: boolean;
-  //   image_url: string;
-  // }
+  useEffect(() => {
+    // Fetch clothing items from the backend when the component mounts
+    const fetchClothingItems = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/clothing/get", {
+          credentials: "include",
+          method: "GET",
+        });
 
-  // const add = () => {};
+        if (!res.ok) {
+          throw new Error("Failed to fetch clothing items");
+        }
+
+        const data = await res.json();
+        console.log("Fetched clothing items:", data);
+        setClothingItems(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchClothingItems();
+  }, []);
+
   return (
     <div className="p-4">
       <div className="flex gap-4 items-center">
@@ -39,6 +64,7 @@ export const Wardrobe = () => {
         </button>
       </div>
       {addingItem && <AddItemForm setAddingItem={setAddingItem} />}
+      <div></div>
     </div>
   );
 };

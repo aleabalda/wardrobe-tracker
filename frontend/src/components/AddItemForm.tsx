@@ -34,6 +34,7 @@ export const AddItemForm = ({
       const res = await fetch("http://localhost:3000/api/clothing/add", {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
 
       if (!res.ok) {
