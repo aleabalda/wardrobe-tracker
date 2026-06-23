@@ -7,6 +7,7 @@ import { Register } from "./pages/Auth/Register";
 import { Wardrobe } from "./pages/WardrobeList/Wardrobe";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ClothingItemExpanded } from "./pages/WardrobeList/ClothingItemExpanded";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/wardrobe" element={<Wardrobe />} />
+              <Route path="/wardrobe/:id" element={<ClothingItemExpanded />} />
             </Route>
           </Route>
           <Route path="/login" element={<Login />} />

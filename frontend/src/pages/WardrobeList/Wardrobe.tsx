@@ -3,6 +3,7 @@ import { AddItemForm } from "../../components/AddItemForm";
 import AddIcon from "@mui/icons-material/Add";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import SortIcon from "@mui/icons-material/Sort";
+import { ClothingItemCard } from "../../components/ClothingItemCard";
 
 interface ClothingItem {
   id: number;
@@ -68,23 +69,9 @@ export const Wardrobe = () => {
         {clothingItems.length === 0 ? (
           <p className="mt-4 text-gray-500">No clothing items found.</p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-4">
             {clothingItems.map((item) => (
-              <div
-                key={item.id}
-                className="border rounded overflow-hidden shadow hover:shadow-lg transition-shadow duration-300"
-              >
-                <img
-                  src={item.image_url}
-                  alt={item.name}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-2">
-                  <h3 className="text-lg font-semibold">{item.name}</h3>
-                  <p className="text-sm text-gray-600">{item.brand}</p>
-                  <p className="text-sm text-gray-600">{item.type}</p>
-                </div>
-              </div>
+              <ClothingItemCard key={item.id} item={item} />
             ))}
           </div>
         )}

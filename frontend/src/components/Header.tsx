@@ -9,7 +9,7 @@ export const Header = () => {
   if (auth.loading) return null;
 
   return (
-    <header className="flex items-center justify-between p-6">
+    <header className="flex items-center justify-between p-4">
       <h1 className="font-bold text-4xl">Wardrobe.io</h1>
       {auth.isAuthenticated ? (
         <button

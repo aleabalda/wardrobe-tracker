@@ -3,6 +3,7 @@ import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { pool } from "../db/pool";
 import { verifyToken } from "../middleware/auth";
+import { ResultSetHeader, RowDataPacket } from "mysql2";
 
 const router = Router();
 
@@ -66,9 +67,10 @@ router.post("/add", verifyToken, upload.single("image"), async (req, res) => {
           price,
           description,
           image_url,
+          image_public_id,
           is_for_sale
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
       [
         userId,
@@ -80,6 +82,7 @@ router.post("/add", verifyToken, upload.single("image"), async (req, res) => {
         price ? Number(price) : null,
         description || null,
         imageUrl,
+        uploadedImagePublicId,
         isForSale === "true" ? 1 : 0,
       ],
     );
@@ -123,6 +126,86 @@ router.get("/get", verifyToken, async (req, res) => {
     res.status(500).json({
       message: "Failed to fetch clothing items",
     });
+  }
+});
+
+router.get("/:id", verifyToken, async (req, res) => {
+  const userId = req.user?.id;
+  const itemId = req.params.id;
+  console.log(`Fetching clothing item with id: ${itemId} for user: ${userId}`);
+
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const [rows] = await pool.execute(
+    `
+    SELECT *
+    FROM clothing_items
+    WHERE id = ? AND user_id = ?
+    `,
+    [itemId, userId],
+  );
+
+  const items = rows as any[];
+
+  if (items.length === 0) {
+    return res.status(404).json({ message: "Item not found" });
+  }
+
+  res.json(items[0]);
+});
+
+interface ClothingItemRow extends RowDataPacket {
+  id: number;
+  image_public_id: string | null;
+}
+
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const itemId = req.params.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const [rows] = await pool.execute<ClothingItemRow[]>(
+      `
+      SELECT image_public_id
+      FROM clothing_items
+      WHERE id = ? AND user_id = ?
+      `,
+      [itemId, userId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Clothing item not found" });
+    }
+
+    const imagePublicId = rows[0].image_public_id;
+
+    if (imagePublicId) {
+      console.log(
+        `Deleting image from Cloudinary with public ID: ${imagePublicId}`,
+      );
+      await cloudinary.uploader.destroy(imagePublicId);
+    }
+
+    const [result] = await pool.execute<ResultSetHeader>(
+      `
+      DELETE FROM clothing_items
+      WHERE id = ? AND user_id = ?
+      `,
+      [itemId, userId],
+    );
+
+    return res.status(200).json({
+      message: "Clothing item and image deleted successfully",
+    });
+  } catch (err) {
+    console.error("Error deleting clothing item:", err);
+    return res.status(500).json({ message: "Failed to delete clothing item" });
   }
 });
 
