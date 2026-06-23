@@ -41,6 +41,19 @@ router.post("/add", verifyToken, upload.single("image"), async (req, res) => {
     const imageUrl = uploadResult.secure_url;
     console.log(imageUrl);
 
+    console.log([
+      userId,
+      name,
+      brand,
+      type,
+      color,
+      size,
+      price ? Number(price) : null,
+      description,
+      uploadResult.secure_url,
+      isForSale === "true" ? 1 : 0,
+    ]);
+
     const [result] = await pool.execute(
       `
         INSERT INTO clothing_items (
@@ -67,6 +80,7 @@ router.post("/add", verifyToken, upload.single("image"), async (req, res) => {
         price ? Number(price) : null,
         description || null,
         imageUrl,
+        isForSale === "true" ? 1 : 0,
       ],
     );
 
