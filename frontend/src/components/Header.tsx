@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import PersonIcon from "@mui/icons-material/Person";
 import { useAuth } from "../context/AuthContext";
+import { Navbar } from "./Navbar";
 
 export const Header = () => {
   const nav = useNavigate();
@@ -12,12 +12,15 @@ export const Header = () => {
     <header className="flex items-center justify-between p-4">
       <h1 className="font-bold text-4xl">Wardrobe.io</h1>
       {auth.isAuthenticated ? (
-        <button
-          onClick={logout}
-          className="rounded-full p-3 flex items-center justify-center bg-amber-500 cursor-pointer"
-        >
-          <PersonIcon />
-        </button>
+        <div className="flex items-center gap-6">
+          <Navbar />
+          <button
+            onClick={logout}
+            className="rounded py-2 px-4 bg-amber-300 hover:bg-amber-400 transition-all ease-in-out font-semibold cursor-pointer"
+          >
+            Logout
+          </button>
+        </div>
       ) : (
         <div className="flex gap-4">
           <button

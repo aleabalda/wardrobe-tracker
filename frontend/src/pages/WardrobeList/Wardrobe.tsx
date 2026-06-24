@@ -44,10 +44,10 @@ export const Wardrobe = () => {
     };
 
     fetchClothingItems();
-  }, []);
+  }, [clothingItems.length]);
 
   return (
-    <div className="p-4">
+    <div>
       <div className="flex gap-4 items-center">
         <button
           onClick={() => {
@@ -64,7 +64,13 @@ export const Wardrobe = () => {
           <SortIcon />
         </button>
       </div>
-      {addingItem && <AddItemForm setAddingItem={setAddingItem} />}
+      {addingItem && (
+        <AddItemForm
+          setAddingItem={setAddingItem}
+          clothingItems={clothingItems}
+          setClothingItems={setClothingItems}
+        />
+      )}
       <div>
         {clothingItems.length === 0 ? (
           <p className="mt-4 text-gray-500">No clothing items found.</p>

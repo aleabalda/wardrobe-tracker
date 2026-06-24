@@ -20,7 +20,6 @@ export const ClothingItemExpanded = () => {
       if (!res.ok) {
         throw new Error("Failed to delete clothing item");
       }
-      window.alert(res.statusText);
       navigate("/wardrobe");
       // Redirect to the wardrobe page after deletion
     } catch (err) {

@@ -1,9 +1,15 @@
 import { useState } from "react";
+import LinearProgress from "@mui/material/LinearProgress";
+import type { ClothingItem } from "../types/ClothingItems";
 
 export const AddItemForm = ({
   setAddingItem,
+  clothingItems,
+  setClothingItems,
 }: {
   setAddingItem: (value: boolean) => void;
+  clothingItems: ClothingItem[];
+  setClothingItems: (items: ClothingItem[]) => void;
 }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -12,6 +18,7 @@ export const AddItemForm = ({
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +27,8 @@ export const AddItemForm = ({
       alert("Please select an image");
       return;
     }
+
+    setIsLoading(true);
 
     const formData = new FormData();
     formData.append("image", imageFile);
@@ -40,12 +49,14 @@ export const AddItemForm = ({
       if (!res.ok) {
         throw new Error("Failed to create item");
       }
-
+      const newItem: ClothingItem = await res.json();
+      setClothingItems([...clothingItems, newItem]);
       setAddingItem(false);
     } catch (err) {
       console.error(err);
       alert("Error creating clothing item");
     }
+    setIsLoading(false);
   };
 
   return (
@@ -151,20 +162,28 @@ export const AddItemForm = ({
         </div>
       </div>
       <div>
-        <button
-          type="submit"
-          className="mt-6 ml-auto py-2 px-4 bg-green-300 cursor-pointer hover:bg-green-400 transition-all ease-in-out font-bold rounded"
-        >
-          Add Item
-        </button>
-        <button
-          onClick={() => {
-            setAddingItem(false);
-          }}
-          className="mt-6 ml-4 py-2 px-4 bg-red-300 cursor-pointer hover:bg-red-400 transition-all ease-in-out font-bold rounded"
-        >
-          Cancel
-        </button>
+        {isLoading ? (
+          <div className="mt-6">
+            <LinearProgress aria-label="Loading…" />
+          </div>
+        ) : (
+          <>
+            <button
+              type="submit"
+              className="mt-6 ml-auto py-2 px-4 bg-green-300 cursor-pointer hover:bg-green-400 transition-all ease-in-out font-bold rounded"
+            >
+              Add Item
+            </button>
+            <button
+              onClick={() => {
+                setAddingItem(false);
+              }}
+              className="mt-6 ml-4 py-2 px-4 bg-red-300 cursor-pointer hover:bg-red-400 transition-all ease-in-out font-bold rounded"
+            >
+              Cancel
+            </button>
+          </>
+        )}
       </div>
     </form>
   );
