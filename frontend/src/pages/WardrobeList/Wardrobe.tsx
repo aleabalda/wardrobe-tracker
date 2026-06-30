@@ -47,7 +47,7 @@ export const Wardrobe = () => {
   }, [clothingItems.length]);
 
   return (
-    <div>
+    <div className="p-4">
       <div className="flex gap-4 items-center">
         <button
           onClick={() => {

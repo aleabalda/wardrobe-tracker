@@ -55,21 +55,21 @@ export const ClothingItemExpanded = () => {
   }
 
   return (
-    <div className="flex h-dvh gap-4 p-4">
+    <div className="flex h-full gap-4">
       <img
         src={item.image_url}
         alt={item.name}
         className="w-1/2 h-full rounded object-cover"
       />
 
-      <div className="w-1/2 flex flex-col gap-2 relative">
+      <div className="flex flex-col gap-2 relative w-1/2 h-full">
         <h1 className="text-5xl font-bold">{item.name}</h1>
         <p className="text-xl">
           {item.brand} | {item.type} | {item.color} | Size {item.size}
         </p>
         <p>{item.description}</p>
         {item.price !== null && <p>${item.price}</p>}
-        <div className="flex gap-2 absolute bottom-1 left-0 ">
+        <div className="flex gap-2 absolute top-0 right-0 ">
           <button className="bg-blue-300 py-2 px-4 rounded font-semibold cursor-pointer hover:bg-blue-400 transition-all ease-in-out">
             Edit
           </button>
