@@ -55,7 +55,7 @@ export const ClothingItemExpanded = () => {
   }
 
   return (
-    <div className="flex h-full gap-3">
+    <div className="flex h-full gap-3 p-4">
       <img
         src={item.image_url}
         alt={item.name}
