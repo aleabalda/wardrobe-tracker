@@ -4,6 +4,7 @@ import AddIcon from "@mui/icons-material/Add";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import SortIcon from "@mui/icons-material/Sort";
 import { ClothingItemCard } from "../../components/ClothingItemCard";
+import { fetchClothingItems } from "../../api/wardrobe";
 
 interface ClothingItem {
   id: number;
@@ -23,28 +24,17 @@ export const Wardrobe = () => {
   const [clothingItems, setClothingItems] = useState<ClothingItem[]>([]);
 
   useEffect(() => {
-    // Fetch clothing items from the backend when the component mounts
-    const fetchClothingItems = async () => {
+    const fetchItems = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/clothing/get", {
-          credentials: "include",
-          method: "GET",
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch clothing items");
-        }
-
-        const data = await res.json();
-        console.log("Fetched clothing items:", data);
-        setClothingItems(data);
-      } catch (err) {
-        console.error(err);
+        const items = await fetchClothingItems();
+        setClothingItems(items);
+      } catch (error) {
+        console.error("Unable to load clothing items:", error);
       }
     };
 
-    fetchClothingItems();
-  }, [clothingItems.length]);
+    void fetchItems();
+  }, []);
 
   return (
     <div className="p-4">

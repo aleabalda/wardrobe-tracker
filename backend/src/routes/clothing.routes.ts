@@ -209,4 +209,53 @@ router.delete("/:id", verifyToken, async (req, res) => {
   }
 });
 
+router.post("/create-listing", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user!.id;
+
+    const { clothingItemId, price, status = "active" } = req.body;
+
+    if (!clothingItemId || price == null) {
+      return res.status(400).json({
+        message: "Missing required fields.",
+      });
+    }
+
+    const [rows] = await pool.query<RowDataPacket[]>(
+      `
+  SELECT id
+  FROM clothing_items
+  WHERE id = ? AND user_id = ?
+  `,
+      [clothingItemId, userId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(403).json({
+        message: "You do not own this clothing item.",
+      });
+    }
+
+    const [result] = await pool.query<ResultSetHeader>(
+      `
+      INSERT INTO listings
+        (clothing_item_id, seller_id, price, status)
+      VALUES (?, ?, ?, ?)
+      `,
+      [clothingItemId, userId, price, status],
+    );
+
+    return res.status(201).json({
+      id: result.insertId,
+      message: "Listing created successfully.",
+    });
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      message: "Failed to create listing.",
+    });
+  }
+});
+
 export default router;

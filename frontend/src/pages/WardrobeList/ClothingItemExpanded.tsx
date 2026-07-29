@@ -1,86 +1,128 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { CreateListingForm } from "../../components/CreateListingForm";
+
 import type { ClothingItem } from "../../types/ClothingItems";
-import { useNavigate } from "react-router-dom";
+import { deleteClothingItem, fetchClothingItemById } from "../../api/wardrobe";
 
 export const ClothingItemExpanded = () => {
-  const { id } = useParams();
-  const [item, setItem] = useState<ClothingItem | null>(null);
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const handleDelete = async () => {
-    if (!id) return;
-
-    try {
-      const res = await fetch(`http://localhost:3000/api/clothing/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to delete clothing item");
-      }
-      navigate("/wardrobe");
-      // Redirect to the wardrobe page after deletion
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const [item, setItem] = useState<ClothingItem | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isListingItem, setIsListingItem] = useState<boolean>(false);
 
   useEffect(() => {
-    const fetchItem = async () => {
+    if (!id) {
+      setError("No clothing item ID was provided.");
+      return;
+    }
+
+    const loadItem = async () => {
       try {
-        console.log(`Fetching clothing item with id: ${id}`);
-        const res = await fetch(`http://localhost:3000/api/clothing/${id}`, {
-          method: "GET",
-          credentials: "include",
-        });
+        setError(null);
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch clothing item");
-        }
-
-        const data = await res.json();
-        setItem(data);
-      } catch (err) {
-        console.error(err);
+        const clothingItem = await fetchClothingItemById(id);
+        setItem(clothingItem);
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Unable to load clothing item.",
+        );
       }
     };
 
-    if (id) fetchItem();
+    void loadItem();
   }, [id]);
+
+  const editError = (error: string) => {
+    setError(error);
+  };
+
+  const handleDelete = async () => {
+    if (!id || isDeleting) return;
+
+    try {
+      setIsDeleting(true);
+      setError(null);
+
+      await deleteClothingItem(id);
+      navigate("/wardrobe");
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unable to delete clothing item.",
+      );
+
+      setIsDeleting(false);
+    }
+  };
+
+  if (error && !item) {
+    return <p className="p-4">{error}</p>;
+  }
 
   if (!item) {
     return <p className="p-4">Loading item...</p>;
   }
 
+  const toggleForm = () => {
+    setIsListingItem(!isListingItem);
+  };
+
   return (
     <div className="flex h-full gap-3 p-4">
+      {isListingItem && (
+        <CreateListingForm
+          clothingItem={item}
+          toggleForm={toggleForm}
+          editError={editError}
+        />
+      )}
       <img
         src={item.image_url}
         alt={item.name}
-        className="w-1/2 h-full rounded object-cover"
+        className="h-full w-1/2 rounded object-cover"
       />
 
-      <div className="flex flex-col gap-2 relative w-1/2 h-full">
+      <div className="relative flex h-full w-1/2 flex-col gap-2">
         <h1 className="text-5xl font-bold">{item.name}</h1>
+
         <p className="text-xl">
           {item.brand} | {item.type} | {item.color} | Size {item.size}
         </p>
+
         <p>{item.description}</p>
+
         {item.price !== null && <p>${item.price}</p>}
-        <div className="flex gap-3 absolute bottom-0 left-0 ">
-          <button className="bg-green-300 py-2 px-4 rounded font-semibold cursor-pointer hover:bg-green-400 transition-all ease-in-out">
+
+        {error && <p className="text-red-600">{error}</p>}
+
+        <div className="absolute bottom-0 left-0 flex gap-3">
+          <button
+            onClick={() => {
+              setIsListingItem(true);
+            }}
+            disabled={item.is_for_sale}
+            className={`cursor-pointer rounded disabled:bg-gray-500 opacity-75 bg-green-300 px-4 py-2 font-semibold transition-all ease-in-out hover:bg-green-400`}
+          >
             List Item For Sale
           </button>
-          <button className="bg-blue-300 py-2 px-4 rounded font-semibold cursor-pointer hover:bg-blue-400 transition-all ease-in-out">
+          <button className="cursor-pointer rounded bg-blue-300 px-4 py-2 font-semibold transition-all ease-in-out hover:bg-blue-400">
             Edit
           </button>
+
           <button
+            type="button"
             onClick={handleDelete}
-            className="bg-red-300 py-2 px-4 rounded font-semibold cursor-pointer hover:bg-red-400 transition-all ease-in-out"
+            disabled={isDeleting}
+            className="cursor-pointer rounded bg-red-300 px-4 py-2 font-semibold transition-all ease-in-out hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Delete
+            {isDeleting ? "Deleting..." : "Delete"}
           </button>
         </div>
       </div>
