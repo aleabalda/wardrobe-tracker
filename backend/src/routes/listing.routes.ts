@@ -83,7 +83,7 @@ router.get("/get", verifyToken, async (req, res) => {
 
     console.log("about to fetch listings");
     const [rows] = await pool.execute(
-      "SELECT listings.*, clothing_items.* FROM listings JOIN clothing_items ON listings.clothing_item_id = clothing_items.id;",
+      "SELECT listings.*, clothing_items.name, clothing_items.description, clothing_items.brand, clothing_items.type, clothing_items.color, clothing_items.size, clothing_items.image_url FROM listings JOIN clothing_items ON listings.clothing_item_id = clothing_items.id;",
       [userId],
     );
     console.log("fetched listings");

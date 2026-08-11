@@ -1,3 +1,5 @@
+import type { ListingItem } from "../types/ListingItem";
+
 const API_BASE_URL = "http://localhost:3000/api/listing";
 
 export const createListing = async (
@@ -25,7 +27,7 @@ export const createListing = async (
   return res.json();
 };
 
-export const fetchAllListings = async () => {
+export const fetchAllListings = async (): Promise<ListingItem[]> => {
   const res = await fetch(`${API_BASE_URL}/get`, {
     method: "GET",
     credentials: "include",
@@ -37,5 +39,5 @@ export const fetchAllListings = async () => {
     );
   }
 
-  return res.json();
+  return res.json() as Promise<ListingItem[]>;
 };
