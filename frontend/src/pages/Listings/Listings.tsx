@@ -24,7 +24,7 @@ export const Listings = () => {
   }, []);
 
   return (
-    <div className="p-4">
+    <div className="p-12">
       <div className="mb-2">
         <ul className="flex gap-4">
           <li

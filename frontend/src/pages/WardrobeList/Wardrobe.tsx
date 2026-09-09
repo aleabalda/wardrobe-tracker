@@ -34,8 +34,12 @@ export const Wardrobe = () => {
   }, []);
 
   return (
-    <div className="p-4">
-      <div className="mb-2">
+    <div className="p-12">
+      <div className="mb-10">
+        <h2 className="text-4xl font-semibold mb-2">All Clothing</h2>
+        {/* include code here to display all types of clothes (jackets, jeans, t-shirts, dresses, etc.) */}
+      </div>
+      <div className="mb-2 flex justify-between">
         <ul className="flex gap-4">
           <li
             onClick={() => {

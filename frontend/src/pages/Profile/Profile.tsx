@@ -7,7 +7,7 @@ export const Profile = () => {
     }`;
 
   return (
-    <div className="p-4 flex flex-col gap-2">
+    <div className="p-12 flex flex-col gap-2">
       <div className="font-semibold cursor-default">Profile</div>
       <div className="w-full h-0.5 rounded bg-black" />
       <nav>
