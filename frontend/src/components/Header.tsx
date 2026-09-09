@@ -16,7 +16,7 @@ export const Header = () => {
           <Navbar />
           <button
             onClick={logout}
-            className="rounded py-2 px-4 bg-amber-300 hover:bg-amber-400 transition-all ease-in-out font-semibold cursor-pointer"
+            className="rounded py-2 px-4 outline-1 outline-black font-semibold cursor-pointer"
           >
             Logout
           </button>

@@ -170,7 +170,7 @@ export const AddItemForm = ({
           <>
             <button
               type="submit"
-              className="mt-6 ml-auto py-2 px-4 bg-green-300 cursor-pointer hover:bg-green-400 transition-all ease-in-out font-bold rounded"
+              className="mt-6 ml-auto py-2 px-4 bg-black text-white cursor-pointer font-bold rounded"
             >
               Add Item
             </button>
@@ -178,7 +178,7 @@ export const AddItemForm = ({
               onClick={() => {
                 setAddingItem(false);
               }}
-              className="mt-6 ml-4 py-2 px-4 bg-red-300 cursor-pointer hover:bg-red-400 transition-all ease-in-out font-bold rounded"
+              className="mt-6 ml-4 py-2 px-4 outline-1 outline-black cursor-pointer font-bold rounded"
             >
               Cancel
             </button>
