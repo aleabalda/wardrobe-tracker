@@ -20,8 +20,10 @@ interface JwtPayload {
 
 const router = Router();
 
+// Create new account
 router.post("/register", async (req, res) => {
-  const { email, username, password } = req.body;
+  const { firstName, lastName, phoneNumber, email, username, password } =
+    req.body;
 
   // Basic validation
   if (!email || !username || !password) {
@@ -45,9 +47,9 @@ router.post("/register", async (req, res) => {
 
   // Insert user
   const [result] = await pool.query<ResultSetHeader>(
-    `INSERT INTO users (email, username, password_hash)
-     VALUES (?, ?, ?)`,
-    [email, username, passwordHash],
+    `INSERT INTO users (firstName, lastName, phoneNumber, email, username, password_hash)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [firstName, lastName, phoneNumber, email, username, passwordHash],
   );
 
   res.status(201).json({

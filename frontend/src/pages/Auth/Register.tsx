@@ -19,7 +19,14 @@ export const Register = () => {
     setLoading(true);
 
     try {
-      await register({ email, username, password });
+      await register({
+        firstName,
+        lastName,
+        phoneNumber,
+        email,
+        username,
+        password,
+      });
       console.log("Registered!");
       setLoading(false);
       nav("/login");
