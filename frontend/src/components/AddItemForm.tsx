@@ -62,7 +62,7 @@ export const AddItemForm = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 bg-white p-6 rounded shadow-lg"
+      className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 bg-white p-6 border-black border rounded shadow-lg"
     >
       <h2 className="text-xl font-bold mb-4">Add New Clothing Item</h2>
       <div className="grid grid-cols-2 gap-6">

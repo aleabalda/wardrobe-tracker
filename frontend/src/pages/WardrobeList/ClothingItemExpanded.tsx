@@ -108,9 +108,9 @@ export const ClothingItemExpanded = () => {
               setIsListingItem(true);
             }}
             disabled={item.is_for_sale}
-            className={`cursor-pointer rounded disabled:hidden opacity-75 bg-green-300 px-4 py-2 font-semibold transition-all ease-in-out hover:bg-green-400`}
+            className={`cursor-pointer rounded disabled:bg-gray-300 opacity-75 bg-green-300 px-4 py-2 font-semibold transition-all ease-in-out hover:bg-green-400`}
           >
-            List Item For Sale
+            {item.is_for_sale ? "Listed For Sale" : "List Item For Sale"}
           </button>
           <button className="cursor-pointer rounded bg-blue-300 px-4 py-2 font-semibold transition-all ease-in-out hover:bg-blue-400">
             Edit

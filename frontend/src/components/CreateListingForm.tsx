@@ -29,7 +29,7 @@ export const CreateListingForm = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="z-10 absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 bg-white p-6 rounded shadow-lg flex flex-col gap-4"
+      className="z-10 absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 bg-white border border-black p-6 rounded shadow-lg flex flex-col gap-4"
     >
       <h2 className="text-xl font-bold">List Item</h2>
       <input
