@@ -8,5 +8,6 @@ export type ClothingItem = {
   size: string;
   price: number | null;
   is_for_sale: boolean;
+  is_favourite: boolean;
   image_url: string;
 };

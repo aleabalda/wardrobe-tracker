@@ -2,19 +2,7 @@ import { useEffect, useState } from "react";
 import { AddItemForm } from "../../components/AddItemForm";
 import { ClothingItemCard } from "../../components/ClothingItemCard";
 import { fetchClothingItems } from "../../api/wardrobe";
-
-interface ClothingItem {
-  id: number;
-  name: string;
-  description: string;
-  brand: string;
-  type: string;
-  color: string;
-  size: string;
-  price: number | null;
-  is_for_sale: boolean;
-  image_url: string;
-}
+import type { ClothingItem } from "../../types/ClothingItems";
 
 export const Wardrobe = () => {
   const [addingItem, setAddingItem] = useState<boolean>(false);

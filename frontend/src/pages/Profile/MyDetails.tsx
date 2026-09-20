@@ -36,6 +36,7 @@ export const MyDetails = () => {
           Name: {user.first_name} {user.last_name}
         </p>
         <p>Email: {user.email}</p>
+        <p>Phone: {user.phone_number}</p>
       </div>
     </div>
   );

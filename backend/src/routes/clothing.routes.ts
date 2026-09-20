@@ -258,4 +258,38 @@ router.post("/create-listing", verifyToken, async (req, res) => {
   }
 });
 
+router.put("/favourite/:id", verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { is_favourite } = req.body;
+    const userId = req.user!.id;
+
+    const [result] = await pool.query(
+      `
+      UPDATE clothing_items
+      SET is_favourite = ?
+      WHERE id = ? AND user_id = ?
+      `,
+      [is_favourite, id, userId],
+    );
+
+    if ((result as any).affectedRows === 0) {
+      return res.status(404).json({
+        message: "Clothing item not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Favourite updated successfully",
+      is_favourite,
+    });
+  } catch (error) {
+    console.error("Error updating favourite:", error);
+
+    return res.status(500).json({
+      message: "Failed to update favourite",
+    });
+  }
+});
+
 export default router;

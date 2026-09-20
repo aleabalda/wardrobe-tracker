@@ -48,3 +48,29 @@ export const deleteClothingItem = async (id: string): Promise<void> => {
     );
   }
 };
+
+export const updateFavourite = async (
+  id: number,
+  isFavourite: boolean,
+): Promise<boolean> => {
+  const response = await fetch(`${API_BASE_URL}/favourite/${id}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      is_favourite: isFavourite,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to update favourite: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  const data = await response.json();
+
+  return data.is_favourite;
+};

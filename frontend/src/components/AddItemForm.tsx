@@ -57,6 +57,7 @@ export const AddItemForm = ({
       alert("Error creating clothing item");
     }
     setIsLoading(false);
+    window.location.reload();
   };
 
   return (
