@@ -115,8 +115,14 @@ router.get("/get", verifyToken, async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
+    // optional ?favourite=true to only return favourited items
+    const favouritesOnly = req.query.favourite === "true";
+    console.log(favouritesOnly);
+
     const [rows] = await pool.execute(
-      "SELECT * FROM clothing_items WHERE user_id = ?",
+      `SELECT * FROM clothing_items WHERE user_id = ?${
+        favouritesOnly ? " AND is_favourite = 1" : ""
+      }`,
       [userId],
     );
 

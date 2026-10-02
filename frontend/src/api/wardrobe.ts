@@ -4,8 +4,12 @@ import type { ClothingItem } from "../types/ClothingItems";
 
 const API_BASE_URL = "http://localhost:3000/api/clothing";
 
-export const fetchClothingItems = async (): Promise<ClothingItem[]> => {
-  const response = await fetch(`${API_BASE_URL}/get`, {
+export const fetchClothingItems = async (
+  favouritesOnly = false,
+): Promise<ClothingItem[]> => {
+  const query = favouritesOnly ? "?favourite=true" : "";
+  console.log(query);
+  const response = await fetch(`${API_BASE_URL}/get${query}`, {
     method: "GET",
     credentials: "include",
   });
