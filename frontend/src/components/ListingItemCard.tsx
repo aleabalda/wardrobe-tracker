@@ -8,7 +8,7 @@ export const ListingItemCard = ({ item }: { item: ListingItem }) => {
         <img
           src={item.image_url}
           alt={item.name}
-          className="rounded aspect-square object-cover mb-1"
+          className="rounded cursor-pointer aspect-9/16 object-cover mb-1"
         />
         <h2 className="text-lg font-semibold">{item.name}</h2>
         <p className="text-sm text-gray-600">

@@ -24,13 +24,14 @@ export const MyDetails = () => {
     return <div>Loading...</div>;
   }
   return (
-    <div className="flex gap-8">
-      <img
-        src={avatar}
-        alt="avatar"
-        className="size-50 rounded-full border-2 border-black"
-      />
-      <div className="flex flex-col gap-1">
+    <div className="w-72 pr-8 max-h-dvh border-r-2 border-r-black flex flex-col items-center justify-center">
+      <h2 className="text-4xl font-semibold mb-2">Details</h2>
+      <div className="flex flex-col items-center gap-2">
+        <img
+          src={avatar}
+          alt="avatar"
+          className="size-50 rounded-full border-2 border-black"
+        />
         <p>Username: {user.username}</p>
         <p>
           Name: {user.first_name} {user.last_name}

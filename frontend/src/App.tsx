@@ -10,7 +10,6 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ClothingItemExpanded } from "./pages/WardrobeList/ClothingItemExpanded";
 import { Listings } from "./pages/Listings/Listings";
 import { Profile } from "./pages/Profile/Profile";
-import { MyDetails } from "./pages/Profile/MyDetails";
 import { MyFavourites } from "./pages/Profile/MyFavourites";
 import { MyOutfits } from "./pages/Profile/MyOutfits";
 import { MyTransactions } from "./pages/Profile/MyTransactions";
@@ -26,7 +25,6 @@ function App() {
               <Route path="/wardrobe" element={<Wardrobe />} />
               <Route path="/wardrobe/:id" element={<ClothingItemExpanded />} />
               <Route path="/profile" element={<Profile />}>
-                <Route index element={<MyDetails />} />
                 <Route path="favourites" element={<MyFavourites />} />
                 <Route path="outfits" element={<MyOutfits />} />
                 <Route path="transactions" element={<MyTransactions />} />

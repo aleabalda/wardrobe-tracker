@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { MyDetails } from "./MyDetails";
 
 export const Profile = () => {
   const linkStyle = ({ isActive }: { isActive: boolean }) =>
@@ -12,11 +13,6 @@ export const Profile = () => {
       <div className="w-full h-0.5 rounded bg-black" />
       <nav>
         <ul className="flex gap-4">
-          <li>
-            <NavLink to="/profile" end className={linkStyle}>
-              My Details
-            </NavLink>
-          </li>
           <li>
             <NavLink to="/profile/favourites" className={linkStyle}>
               My Favourites
@@ -34,8 +30,13 @@ export const Profile = () => {
           </li>
         </ul>
       </nav>
-      <div className="mt-4">
-        <Outlet />
+      <div className="mt-4 flex gap-8 max-h-dvh">
+        <div>
+          <MyDetails />
+        </div>
+        <div>
+          <Outlet />
+        </div>
       </div>
     </div>
   );

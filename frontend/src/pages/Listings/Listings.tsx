@@ -23,6 +23,11 @@ export const Listings = () => {
     void fetchListings();
   }, []);
 
+  // shopping shows other users' listings, selling shows the user's own
+  const filteredListings = listings.filter((item) =>
+    isShopping ? item.seller_id !== auth.userId : item.seller_id === auth.userId,
+  );
+
   return (
     <div className="p-12">
       <div className="mb-10">
@@ -51,17 +56,13 @@ export const Listings = () => {
       </div>
       <div className="w-full h-0.5 rounded bg-black"></div>
       <div>
-        {listings.length === 0 ? (
+        {filteredListings.length === 0 ? (
           <p className="mt-4 text-gray-500">No listings found.</p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-            {isShopping
-              ? listings
-                  .filter((item) => item.seller_id !== auth.userId)
-                  .map((item) => <ListingItemCard key={item.id} item={item} />)
-              : listings
-                  .filter((item) => item.seller_id === auth.userId)
-                  .map((item) => <ListingItemCard key={item.id} item={item} />)}
+            {filteredListings.map((item) => (
+              <ListingItemCard key={item.id} item={item} />
+            ))}
           </div>
         )}
       </div>
