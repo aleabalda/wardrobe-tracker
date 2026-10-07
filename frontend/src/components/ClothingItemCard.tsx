@@ -36,7 +36,7 @@ export const ClothingItemCard = ({ item }: { item: ClothingItem }) => {
         <img
           src={item.image_url}
           alt={item.name}
-          className="rounded cursor-pointer aspect-9/16 object-cover mb-1"
+          className="rounded border border-black cursor-pointer aspect-9/16 object-cover mb-1"
         />
       </Link>
       <div className="flex justify-between items-center">

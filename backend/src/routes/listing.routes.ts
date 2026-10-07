@@ -12,7 +12,8 @@ router.post("/create", verifyToken, async (req, res) => {
     await connection.beginTransaction();
 
     const userId = req.user!.id;
-    const { clothingItemId, price, status = "active" } = req.body;
+    const { clothingItemId, price, status = "active", description } =
+      req.body;
 
     if (!clothingItemId || price == null) {
       return res.status(400).json({
@@ -46,14 +47,26 @@ router.post("/create", verifyToken, async (req, res) => {
       [clothingItemId, userId, price, status],
     );
 
-    await connection.query(
-      `
-      UPDATE clothing_items
-      SET is_for_sale = 1
-      WHERE id = ?
-      `,
-      [clothingItemId],
-    );
+    // only overwrite the item's description when the client sends one
+    if (description !== undefined) {
+      await connection.query(
+        `
+        UPDATE clothing_items
+        SET is_for_sale = 1, description = ?
+        WHERE id = ?
+        `,
+        [description.trim() || null, clothingItemId],
+      );
+    } else {
+      await connection.query(
+        `
+        UPDATE clothing_items
+        SET is_for_sale = 1
+        WHERE id = ?
+        `,
+        [clothingItemId],
+      );
+    }
 
     await connection.commit();
 

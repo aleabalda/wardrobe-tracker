@@ -81,12 +81,15 @@ export const ClothingItemExpanded = () => {
           clothingItem={item}
           toggleForm={toggleForm}
           editError={editError}
+          onListingCreated={(description) => {
+            setItem({ ...item, description, is_for_sale: true });
+          }}
         />
       )}
       <img
         src={item.image_url}
         alt={item.name}
-        className="h-full w-1/2 rounded object-cover"
+        className="h-full w-1/2 rounded border-black border object-cover"
       />
 
       <div className="relative flex h-full w-1/2 flex-col gap-2">
@@ -104,15 +107,24 @@ export const ClothingItemExpanded = () => {
 
         <div className="absolute bottom-0 left-0 flex gap-3">
           <button
+            type="button"
             onClick={() => {
               setIsListingItem(true);
             }}
             disabled={item.is_for_sale}
-            className={`cursor-pointer rounded disabled:bg-gray-300 opacity-75 bg-green-300 px-4 py-2 font-semibold transition-all ease-in-out hover:bg-green-400`}
+            aria-disabled={item.is_for_sale}
+            title={
+              item.is_for_sale
+                ? "This item is already listed for sale"
+                : undefined
+            }
+            className="border border-black rounded px-4 py-2 font-semibold transition-all ease-in-out enabled:cursor-pointer enabled:hover:bg-black enabled:hover:text-white disabled:cursor-not-allowed disabled:border-dashed disabled:border-gray-400 disabled:bg-gray-200 disabled:text-gray-500"
           >
-            {item.is_for_sale ? "Listed For Sale" : "List Item For Sale"}
+            {item.is_for_sale
+              ? "Already Listed For Sale"
+              : "List Item For Sale"}
           </button>
-          <button className="cursor-pointer rounded bg-blue-300 px-4 py-2 font-semibold transition-all ease-in-out hover:bg-blue-400">
+          <button className="cursor-pointer border border-black hover:bg-black hover:text-white rounded px-4 py-2 font-semibold transition-all ease-in-out">
             Edit
           </button>
 
@@ -120,7 +132,7 @@ export const ClothingItemExpanded = () => {
             type="button"
             onClick={handleDelete}
             disabled={isDeleting}
-            className="cursor-pointer rounded bg-red-300 px-4 py-2 font-semibold transition-all ease-in-out hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer border border-red-600 hover:bg-red-600 hover:text-white rounded px-4 py-2 font-semibold transition-all ease-in-out disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isDeleting ? "Deleting..." : "Delete"}
           </button>

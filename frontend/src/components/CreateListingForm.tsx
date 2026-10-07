@@ -6,18 +6,24 @@ export const CreateListingForm = ({
   toggleForm,
   clothingItem,
   editError,
+  onListingCreated,
 }: {
   toggleForm: () => void;
   clothingItem: ClothingItem;
   editError: (error: string) => void;
+  onListingCreated: (description: string) => void;
 }) => {
-  const [price, setPrice] = useState<number>(0);
+  const [price, setPrice] = useState<string>("");
+  const [description, setDescription] = useState<string>(
+    clothingItem.description ?? "",
+  );
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
     try {
-      await createListing(clothingItem.id, price);
+      await createListing(clothingItem.id, Number(price), description);
+      onListingCreated(description.trim());
       toggleForm();
     } catch (error) {
       editError(
@@ -32,33 +38,56 @@ export const CreateListingForm = ({
       className="z-10 absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 bg-white border border-black p-6 rounded shadow-lg flex flex-col gap-4"
     >
       <h2 className="text-xl font-bold">List Item</h2>
-      <input
-        id="price-input"
-        value={price}
-        type="number"
-        placeholder="Price (CAD)"
-        required
-        onChange={(e: any) => {
-          setPrice(e.target.value);
-        }}
-        className="p-3 rounded outline-1 outline-gray-400"
-      />
-      <input
-        id="description-input"
-        type="text"
-        placeholder="Description"
-        className="p-3 rounded outline-1 outline-gray-400"
-      />
-      <label htmlFor="price-input" className="hidden"></label>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="price-input" className="text-sm font-semibold">
+          Price
+        </label>
+        <div className="flex items-center rounded outline-1 outline-gray-400 focus-within:outline-2 focus-within:outline-black">
+          <span className="pl-3 text-gray-500 font-semibold">$</span>
+          <input
+            id="price-input"
+            value={price}
+            type="number"
+            inputMode="decimal"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+            required
+            onChange={(e: any) => {
+              setPrice(e.target.value);
+            }}
+            className="w-full p-3 pl-1 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+          <span className="pr-3 text-sm text-gray-500">CAD</span>
+        </div>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="description-input" className="text-sm font-semibold">
+          Description
+        </label>
+        <div className="flex items-center rounded outline-1 outline-gray-400 focus-within:outline-2 focus-within:outline-black">
+          <input
+            id="description-input"
+            value={description}
+            type="text"
+            placeholder="Describe the item's condition"
+            onChange={(e: any) => {
+              setDescription(e.target.value);
+            }}
+            className="w-full p-3 outline-none"
+          />
+        </div>
+      </div>
       <div className="flex gap-2">
-        <button className="cursor-pointer rounded bg-green-300 w-1/2 py-2 font-semibold transition-all ease-in-out hover:bg-green-400">
+        <button className="cursor-pointer rounded border border-black hover:bg-black hover:text-white w-1/2 py-2 font-semibold transition-all ease-in-out">
           Submit
         </button>
         <button
+          type="button"
           onClick={toggleForm}
-          className="cursor-pointer rounded bg-red-300 w-1/2 py-2 font-semibold transition-all ease-in-out hover:bg-red-400"
+          className="cursor-pointer rounded w-1/2 py-2 font-semibold transition-all ease-in-out border border-red-600 hover:text-white hover:bg-red-600"
         >
-          Exit
+          Cancel
         </button>
       </div>
     </form>

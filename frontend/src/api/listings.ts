@@ -5,6 +5,7 @@ const API_BASE_URL = "http://localhost:3000/api/listing";
 export const createListing = async (
   clothingItemId: number,
   price: number,
+  description?: string,
   status: "active" | "sold" | "cancelled" = "active",
 ) => {
   const res = await fetch(`${API_BASE_URL}/create`, {
@@ -16,6 +17,7 @@ export const createListing = async (
     body: JSON.stringify({
       clothingItemId,
       price,
+      description,
       status,
     }),
   });
