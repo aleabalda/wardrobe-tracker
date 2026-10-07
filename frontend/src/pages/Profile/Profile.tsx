@@ -8,9 +8,8 @@ export const Profile = () => {
     }`;
 
   return (
-    <div className="p-12 flex flex-col gap-2">
-      <div className="font-semibold cursor-default">Profile</div>
-      <div className="w-full h-0.5 rounded bg-black" />
+    <div className="h-full p-12 flex flex-col gap-2">
+      <h2 className="text-4xl font-semibold mb-2">Profile</h2>
       <nav>
         <ul className="flex gap-4">
           <li>
@@ -30,11 +29,13 @@ export const Profile = () => {
           </li>
         </ul>
       </nav>
-      <div className="mt-4 flex gap-8 max-h-dvh">
-        <div>
+      <div className="w-full h-0.5 rounded bg-black" />
+
+      <div className="mt-4 flex flex-1 min-h-0">
+        <div className="h-full">
           <MyDetails />
         </div>
-        <div>
+        <div className="flex-1 min-h-0 overflow-y-auto px-8">
           <Outlet />
         </div>
       </div>

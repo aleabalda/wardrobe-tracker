@@ -15,7 +15,10 @@ export const Navbar = () => {
           </Link>
         </li>
         <li>
-          <Link to={"/profile"} className="hover:underline font-semibold">
+          <Link
+            to={"/profile/favourites"}
+            className="hover:underline font-semibold"
+          >
             Profile
           </Link>
         </li>

@@ -15,3 +15,22 @@ export const fetchUserDetails = async (): Promise<UserDetails> => {
 
   return data;
 };
+
+export const uploadAvatar = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const res = await fetch(`${API_BASE_URL}/avatar`, {
+    method: "PUT",
+    credentials: "include",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to upload profile picture");
+  }
+
+  const data: { avatar_url: string } = await res.json();
+
+  return data.avatar_url;
+};
