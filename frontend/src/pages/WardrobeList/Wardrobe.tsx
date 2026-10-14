@@ -3,6 +3,7 @@ import { AddItemForm } from "../../components/AddItemForm";
 import { ClothingItemCard } from "../../components/ClothingItemCard";
 import { fetchClothingItems } from "../../api/wardrobe";
 import type { ClothingItem } from "../../types/ClothingItems";
+import { CLOTHING_TYPES } from "../../types/clothingItemTypes";
 
 export const Wardrobe = () => {
   const [addingItem, setAddingItem] = useState<boolean>(false);
@@ -23,8 +24,16 @@ export const Wardrobe = () => {
 
   return (
     <div className="p-12">
-      <div className="mb-10">
-        <h2 className="text-4xl font-semibold mb-2">All Clothing</h2>
+      <div className="mb-8">
+        <h2 className="text-4xl font-semibold mb-4">All Clothing</h2>
+        <div className="flex gap-4 overflow-x-auto w-full">
+          {CLOTHING_TYPES.map((val, key) => (
+            <button key={key} className="cursor-pointer hover:underline">
+              <div className="h-80 w-52 hover:border hover:border-black flex flex-col justify-end"></div>
+              <p className="text-left text-xs mt-2">{val}</p>
+            </button>
+          ))}
+        </div>
         {/* include code here to display all types of clothes (jackets, jeans, t-shirts, dresses, etc.) */}
       </div>
       <div className="mb-2 flex justify-between">

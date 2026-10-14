@@ -49,7 +49,7 @@ export const MyDetails = () => {
   }
   return (
     <div className="w-72 h-full pr-8 border-r-2 border-r-black flex flex-col items-center">
-      <h2 className="text-4xl font-semibold mb-2">Details</h2>
+      <h2 className="text-xl font-semibold mb-2">Details</h2>
       <div className="flex flex-col items-center gap-2">
         <button
           type="button"

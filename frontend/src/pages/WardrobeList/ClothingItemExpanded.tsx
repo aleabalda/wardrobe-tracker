@@ -89,17 +89,20 @@ export const ClothingItemExpanded = () => {
       <img
         src={item.image_url}
         alt={item.name}
-        className="h-full w-1/2 rounded border-black border object-cover"
+        className="h-full w-2/3 object-cover"
       />
+      <div className="relative flex h-full w-1/3 flex-col gap-2">
+        {/* Follow facebook marketplace format */}
+        <h1 className="text-2xl font-bold">{item.name}</h1>
+        <h2 className="font-semibold">Details</h2>
+        <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+          <p>Brand: {item.brand}</p>
+          <p>Type: {item.type}</p>
+          <p>Color: {item.color}</p>
+          <p>Size: {item.size}</p>
+        </div>
 
-      <div className="relative flex h-full w-1/2 flex-col gap-2">
-        <h1 className="text-5xl font-bold">{item.name}</h1>
-
-        <p className="text-xl">
-          {item.brand} | {item.type} | {item.color} | Size {item.size}
-        </p>
-
-        <p>{item.description}</p>
+        <p className="">{item.description}</p>
 
         {item.price !== null && <p>${item.price}</p>}
 

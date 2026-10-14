@@ -21,7 +21,7 @@ export const MyFavourites = () => {
 
   return (
     <div>
-      <h2 className="text-4xl font-semibold mb-2">Favourites</h2>
+      <h2 className="text-xl font-semibold mb-2">Favourites</h2>
 
       {favouriteItems.length === 0 ? (
         <p className="mt-4 text-gray-500">No favourite items yet.</p>

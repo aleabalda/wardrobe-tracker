@@ -9,20 +9,20 @@ export const Profile = () => {
 
   return (
     <div className="h-full p-12 flex flex-col gap-2">
-      <h2 className="text-4xl font-semibold mb-2">Profile</h2>
+      <h2 className="text-xl font-semibold mb-2">Profile</h2>
       <nav>
         <ul className="flex gap-4">
-          <li>
+          <li className="text-sm">
             <NavLink to="/profile/favourites" className={linkStyle}>
               My Favourites
             </NavLink>
           </li>
-          <li>
+          <li className="text-sm">
             <NavLink to="/profile/outfits" className={linkStyle}>
               My Outfits
             </NavLink>
           </li>
-          <li>
+          <li className="text-sm">
             <NavLink to="/profile/transactions" className={linkStyle}>
               My Transactions
             </NavLink>

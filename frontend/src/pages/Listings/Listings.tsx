@@ -3,6 +3,7 @@ import { fetchAllListings } from "../../api/listings";
 import type { ListingItem } from "../../types/ListingItem";
 import { ListingItemCard } from "../../components/ListingItemCard";
 import { useAuth } from "../../context/AuthContext";
+import { CLOTHING_TYPES } from "../../types/clothingItemTypes";
 
 export const Listings = () => {
   const [listings, setListings] = useState<ListingItem[]>([]);
@@ -25,14 +26,24 @@ export const Listings = () => {
 
   // shopping shows other users' listings, selling shows the user's own
   const filteredListings = listings.filter((item) =>
-    isShopping ? item.seller_id !== auth.userId : item.seller_id === auth.userId,
+    isShopping
+      ? item.seller_id !== auth.userId
+      : item.seller_id === auth.userId,
   );
 
   return (
     <div className="p-12">
-      <div className="mb-10">
-        <h2 className="text-4xl font-semibold mb-2">All Listings</h2>
+      <div className="mb-8">
+        <h2 className="text-4xl font-semibold mb-4">All Listings</h2>
         {/* include code here to display all types of clothes (jackets, jeans, t-shirts, dresses, etc.) */}
+        <div className="flex gap-4 overflow-x-auto w-full">
+          {CLOTHING_TYPES.map((val, key) => (
+            <button key={key} className="cursor-pointer hover:underline">
+              <div className="h-80 w-52 hover:border hover:border-black flex flex-col justify-end"></div>
+              <p className="text-left text-xs mt-2">{val}</p>
+            </button>
+          ))}
+        </div>
       </div>
       <div className="mb-2">
         <ul className="flex gap-4">
