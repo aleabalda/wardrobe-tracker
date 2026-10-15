@@ -3,11 +3,16 @@ import { fetchAllListings } from "../../api/listings";
 import type { ListingItem } from "../../types/ListingItem";
 import { ListingItemCard } from "../../components/ListingItemCard";
 import { useAuth } from "../../context/AuthContext";
-import { CLOTHING_TYPES } from "../../types/clothingItemTypes";
+import {
+  CLOTHING_TYPES,
+  type ClothingType,
+} from "../../types/clothingItemTypes";
 
 export const Listings = () => {
   const [listings, setListings] = useState<ListingItem[]>([]);
   const [isShopping, setIsShopping] = useState<boolean>(true);
+  const [activeClothingType, setActiveClothingType] =
+    useState<ClothingType>("All Clothing");
   const { auth } = useAuth();
 
   useEffect(() => {
@@ -37,9 +42,22 @@ export const Listings = () => {
         <h2 className="text-4xl font-semibold mb-4">All Listings</h2>
         {/* include code here to display all types of clothes (jackets, jeans, t-shirts, dresses, etc.) */}
         <div className="flex gap-4 overflow-x-auto w-full">
-          {CLOTHING_TYPES.map((val, key) => (
-            <button key={key} className="cursor-pointer hover:underline">
-              <div className="h-80 w-52 hover:border hover:border-black flex flex-col justify-end"></div>
+          {CLOTHING_TYPES.map((val) => (
+            <button
+              key={val}
+              aria-pressed={activeClothingType === val}
+              className={`cursor-pointer hover:underline ${
+                activeClothingType === val ? "underline" : ""
+              }`}
+              onClick={() => {
+                setActiveClothingType(val);
+              }}
+            >
+              <div
+                className={`h-80 w-52 hover:border hover:border-black flex flex-col justify-end ${
+                  activeClothingType === val ? "border border-black" : ""
+                }`}
+              ></div>
               <p className="text-left text-xs mt-2">{val}</p>
             </button>
           ))}
