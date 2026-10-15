@@ -1,6 +1,19 @@
 import { useState } from "react";
 import LinearProgress from "@mui/material/LinearProgress";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import type { ClothingItem } from "../types/ClothingItems";
+import { CLOTHING_TYPES, type ClothingType } from "../types/clothingItemTypes";
+
+type ItemClothingType = Exclude<ClothingType, "All Clothing">;
+
+// "All Clothing" is a filter option, not a type an item can have
+const ITEM_CLOTHING_TYPES = CLOTHING_TYPES.filter(
+  (val): val is ItemClothingType => val !== "All Clothing",
+);
+
+const labelClass = "text-sm";
+const inputClass =
+  "w-full p-3 bg-white rounded outline-1 outline-gray-400 focus:outline-1 focus:outline-black";
 
 export const AddItemForm = ({
   setAddingItem,
@@ -14,7 +27,7 @@ export const AddItemForm = ({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [brand, setBrand] = useState("");
-  const [type, setType] = useState("");
+  const [type, setType] = useState<ItemClothingType | "">("");
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -61,131 +74,152 @@ export const AddItemForm = ({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 bg-white p-6 border-black border rounded shadow-lg"
-    >
-      <h2 className="text-xl font-bold mb-4">Add New Clothing Item</h2>
-      <div className="grid grid-cols-2 gap-6">
-        <div>
-          <label htmlFor="name" className="hidden">
-            Name:
-          </label>
-          <input
-            className="p-3 outline-1 outline-gray-400 rounded w-full"
-            type="text"
-            name="name"
-            placeholder="Enter item name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="description" className="hidden">
-            Description:
-          </label>
-          <input
-            className="p-3 w-full rounded outline-1 outline-gray-400"
-            type="text"
-            name="description"
-            placeholder="Enter item description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="brand" className="hidden">
-            Brand:
-          </label>
-          <input
-            className="p-3 w-full rounded outline-1 outline-gray-400"
-            type="text"
-            name="brand"
-            placeholder="Enter item brand"
-            value={brand}
-            onChange={(e) => setBrand(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="type" className="hidden">
-            Type:
-          </label>
-          <input
-            className="p-3 w-full rounded outline-1 outline-gray-400"
-            type="text"
-            name="type"
-            placeholder="Enter item type"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="color" className="hidden">
-            Color:
-          </label>
-          <input
-            className="p-3 w-full rounded outline-1 outline-gray-400"
-            type="text"
-            name="color"
-            placeholder="Enter item color"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="size" className="hidden">
-            Size:
-          </label>
-          <input
-            className="p-3 w-full rounded outline-1 outline-gray-400"
-            type="text"
-            name="size"
-            placeholder="Enter item size"
-            value={size}
-            onChange={(e) => setSize(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="clothing-item" className="hidden">
-            Choose a picture:
-          </label>
-          <input
-            type="file"
-            id="clothing-item"
-            name="image"
-            accept="image/png, image/jpeg"
-            onChange={(e) => {
-              if (e.target.files?.[0]) {
-                setImageFile(e.target.files[0]);
-              }
-            }}
-          />
-        </div>
-      </div>
-      <div>
-        {isLoading ? (
-          <div className="mt-6">
-            <LinearProgress aria-label="Loading…" />
+    <>
+      <div
+        className="fixed inset-0 z-10 bg-black/50"
+        onClick={() => {
+          setAddingItem(false);
+        }}
+      ></div>
+      <form
+        onSubmit={handleSubmit}
+        className="fixed transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 z-20 w-xl max-w-[calc(100vw-2rem)] bg-white border border-black p-6 rounded shadow-lg flex flex-col gap-4"
+      >
+        <h2 className="text-lg">Add Clothing Item</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="name-input" className={labelClass}>
+              Name
+            </label>
+            <input
+              id="name-input"
+              className={inputClass}
+              type="text"
+              placeholder="e.g. Linen shirt"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="brand-input" className={labelClass}>
+              Brand
+            </label>
+            <input
+              id="brand-input"
+              className={inputClass}
+              type="text"
+              placeholder="e.g. Uniqlo"
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="type-input" className={labelClass}>
+              Type
+            </label>
+            <div className="relative">
+              <select
+                id="type-input"
+                className={`${inputClass} appearance-none cursor-pointer pr-10 ${
+                  type === "" ? "text-gray-400" : ""
+                }`}
+                required
+                value={type}
+                onChange={(e) => setType(e.target.value as ItemClothingType)}
+              >
+                <option value="" disabled>
+                  Select a type
+                </option>
+                {ITEM_CLOTHING_TYPES.map((val) => (
+                  <option key={val} value={val} className="text-black">
+                    {val}
+                  </option>
+                ))}
+              </select>
+              <KeyboardArrowDownIcon
+                fontSize="small"
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="size-input" className={labelClass}>
+              Size
+            </label>
+            <input
+              id="size-input"
+              className={inputClass}
+              type="text"
+              placeholder="e.g. M"
+              value={size}
+              onChange={(e) => setSize(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="color-input" className={labelClass}>
+              Color
+            </label>
+            <input
+              id="color-input"
+              className={inputClass}
+              type="text"
+              placeholder="e.g. Navy"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="image-input" className={labelClass}>
+              Image
+            </label>
+            <input
+              id="image-input"
+              className={`${inputClass} text-sm/6 text-gray-500 file:mr-3 file:cursor-pointer cursor-pointer file:text-black file:transition-all file:ease-in-out hover:file:underline`}
+              type="file"
+              accept="image/png, image/jpeg"
+              onChange={(e) => {
+                if (e.target.files?.[0]) {
+                  setImageFile(e.target.files[0]);
+                }
+              }}
+            />
+          </div>
+          <div className="col-span-2 flex flex-col gap-1">
+            <label htmlFor="description-input" className={labelClass}>
+              Description
+            </label>
+            <textarea
+              id="description-input"
+              className={`${inputClass} resize-none`}
+              rows={3}
+              placeholder="Describe the item"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+        </div>
+        {isLoading ? (
+          <LinearProgress aria-label="Loading…" />
         ) : (
-          <>
+          <div className="flex gap-2">
             <button
               type="submit"
-              className="mt-6 ml-auto py-2 px-4 bg-black text-white cursor-pointer font-bold rounded"
+              className="cursor-pointer rounded border border-black hover:bg-black hover:text-white w-1/2 py-2 font-semibold transition-all ease-in-out"
             >
               Add Item
             </button>
             <button
+              type="button"
               onClick={() => {
                 setAddingItem(false);
               }}
-              className="mt-6 ml-4 py-2 px-4 outline-1 outline-black cursor-pointer font-bold rounded"
+              className="cursor-pointer rounded w-1/2 py-2 font-semibold transition-all ease-in-out border border-red-600 hover:text-white hover:bg-red-600"
             >
               Cancel
             </button>
-          </>
+          </div>
         )}
-      </div>
-    </form>
+      </form>
+    </>
   );
 };
