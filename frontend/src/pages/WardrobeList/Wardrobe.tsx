@@ -28,9 +28,9 @@ export const Wardrobe = () => {
   }, []);
 
   return (
-    <div className="p-12">
+    <div className="p-12 pt-6">
       <div className="mb-8">
-        <h2 className="text-4xl font-semibold mb-4">{activeClothingType}</h2>
+        <h2 className="text-4xl mb-4">{activeClothingType}</h2>
         <div className="flex gap-4 overflow-x-auto w-full">
           {CLOTHING_TYPES.map((val) => (
             <button
@@ -54,19 +54,17 @@ export const Wardrobe = () => {
         </div>
       </div>
       <div className="mb-2 flex justify-between">
-        <ul className="flex gap-4">
+        <ul className="flex gap-3">
           <li
             onClick={() => {
               setAddingItem(true);
             }}
-            className="font-semibold cursor-pointer hover:underline"
+            className="cursor-pointer hover:underline text-sm"
           >
             Add
           </li>
-          <li className="font-semibold cursor-pointer hover:underline">
-            Filter
-          </li>
-          <li className="font-semibold hover:underline cursor-pointer">Sort</li>
+          <li className=" cursor-pointer hover:underline text-sm">Filter</li>
+          <li className="hover:underline cursor-pointer text-sm">Sort</li>
         </ul>
       </div>
       <div className="w-full h-0.5 rounded bg-black"></div>
