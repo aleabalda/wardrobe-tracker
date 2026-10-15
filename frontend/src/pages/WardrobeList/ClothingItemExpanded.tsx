@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CreateListingForm } from "../../components/CreateListingForm";
+import { BlurredImage } from "../../components/ui/BlurredImage";
 
 import type { ClothingItem } from "../../types/ClothingItems";
 import { deleteClothingItem, fetchClothingItemById } from "../../api/wardrobe";
@@ -86,10 +87,10 @@ export const ClothingItemExpanded = () => {
           }}
         />
       )}
-      <img
+      <BlurredImage
         src={item.image_url}
         alt={item.name}
-        className="h-full w-2/3 object-cover"
+        className="h-full w-2/3"
       />
       <div className="relative flex h-full w-1/3 flex-col gap-2">
         {/* Follow facebook marketplace format */}

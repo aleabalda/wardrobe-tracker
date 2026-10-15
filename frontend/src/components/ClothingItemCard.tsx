@@ -35,7 +35,7 @@ export const ClothingItemCard = ({ item }: { item: ClothingItem }) => {
       <Link
         to={`/wardrobe/${item.id}`}
         aria-label={`View details for ${item.name}`}
-        className="group relative block mb-1 overflow-hidden"
+        className="group relative block mb-1 overflow-hidden shadow-lg transition-shadow ease-in-out duration-150 hover:shadow-xl"
       >
         <img
           src={item.image_url}
