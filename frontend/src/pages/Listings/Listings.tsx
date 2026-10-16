@@ -42,23 +42,29 @@ export const Listings = () => {
         <h2 className="text-4xl mb-4">{activeClothingType}</h2>
         {/* include code here to display all types of clothes (jackets, jeans, t-shirts, dresses, etc.) */}
         <div className="flex gap-4 overflow-x-auto w-full">
-          {CLOTHING_TYPES.map((val) => (
+          {CLOTHING_TYPES.map(({ type, image }) => (
             <button
-              key={val}
-              aria-pressed={activeClothingType === val}
+              key={type}
+              aria-pressed={activeClothingType === type}
               className={`cursor-pointer hover:underline ${
-                activeClothingType === val ? "underline" : ""
+                activeClothingType === type ? "underline" : ""
               }`}
               onClick={() => {
-                setActiveClothingType(val);
+                setActiveClothingType(type);
               }}
             >
               <div
                 className={`h-80 w-52 hover:border hover:border-black flex flex-col justify-end ${
-                  activeClothingType === val ? "border border-black" : ""
+                  activeClothingType === type ? "border border-black" : ""
                 }`}
-              ></div>
-              <p className="text-left text-xs mt-2">{val}</p>
+              >
+                <img
+                  src={image}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <p className="text-left text-xs mt-2">{type}</p>
             </button>
           ))}
         </div>

@@ -1,4 +1,5 @@
 {
+  // sets the Python Interpreter to the venv in the tests folder
   "python.defaultInterpreterPath": "${workspaceFolder}/tests/.venv/bin/python",
   "python-envs.pythonProjects": []
 }

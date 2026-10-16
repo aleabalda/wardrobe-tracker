@@ -7,7 +7,7 @@ import { CLOTHING_TYPES, type ClothingType } from "../types/clothingItemTypes";
 type ItemClothingType = Exclude<ClothingType, "All Clothing">;
 
 // "All Clothing" is a filter option, not a type an item can have
-const ITEM_CLOTHING_TYPES = CLOTHING_TYPES.filter(
+const ITEM_CLOTHING_TYPES = CLOTHING_TYPES.map(({ type }) => type).filter(
   (val): val is ItemClothingType => val !== "All Clothing",
 );
 
@@ -89,7 +89,7 @@ export const AddItemForm = ({
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1">
             <label htmlFor="name-input" className={labelClass}>
-              Name
+              Name <span className="text-orange-500">*</span>
             </label>
             <input
               id="name-input"
@@ -98,6 +98,7 @@ export const AddItemForm = ({
               placeholder="e.g. Linen shirt"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              required
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -115,7 +116,7 @@ export const AddItemForm = ({
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="type-input" className={labelClass}>
-              Type
+              Type <span className="text-orange-500">*</span>
             </label>
             <div className="relative">
               <select
@@ -144,7 +145,7 @@ export const AddItemForm = ({
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="size-input" className={labelClass}>
-              Size
+              Size <span className="text-orange-500">*</span>
             </label>
             <input
               id="size-input"
@@ -153,11 +154,12 @@ export const AddItemForm = ({
               placeholder="e.g. M"
               value={size}
               onChange={(e) => setSize(e.target.value)}
+              required
             />
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="color-input" className={labelClass}>
-              Color
+              Color <span className="text-orange-500">*</span>
             </label>
             <input
               id="color-input"
@@ -166,6 +168,7 @@ export const AddItemForm = ({
               placeholder="e.g. Navy"
               value={color}
               onChange={(e) => setColor(e.target.value)}
+              required
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -201,10 +204,10 @@ export const AddItemForm = ({
         {isLoading ? (
           <LinearProgress aria-label="Loading…" />
         ) : (
-          <div className="flex gap-2">
+          <div className="flex gap-4">
             <button
               type="submit"
-              className="cursor-pointer rounded border border-black hover:bg-black hover:text-white w-1/2 py-2 font-semibold transition-all ease-in-out"
+              className="cursor-pointer hover:underline text-sm"
             >
               Add Item
             </button>
@@ -213,7 +216,7 @@ export const AddItemForm = ({
               onClick={() => {
                 setAddingItem(false);
               }}
-              className="cursor-pointer rounded w-1/2 py-2 font-semibold transition-all ease-in-out border border-red-600 hover:text-white hover:bg-red-600"
+              className="cursor-pointer underline text-sm"
             >
               Cancel
             </button>

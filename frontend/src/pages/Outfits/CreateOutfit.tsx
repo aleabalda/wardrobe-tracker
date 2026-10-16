@@ -10,7 +10,7 @@ import {
 
 type OutfitCategory = Exclude<ClothingType, "All Clothing">;
 
-const OUTFIT_CATEGORIES = CLOTHING_TYPES.filter(
+const OUTFIT_CATEGORIES = CLOTHING_TYPES.map(({ type }) => type).filter(
   (val): val is OutfitCategory => val !== "All Clothing",
 );
 
