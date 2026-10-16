@@ -37,9 +37,9 @@ export const Listings = () => {
   );
 
   return (
-    <div className="p-12">
+    <div className="p-12 pt-6">
       <div className="mb-8">
-        <h2 className="text-4xl font-semibold mb-4">All Listings</h2>
+        <h2 className="text-4xl mb-4">{activeClothingType}</h2>
         {/* include code here to display all types of clothes (jackets, jeans, t-shirts, dresses, etc.) */}
         <div className="flex gap-4 overflow-x-auto w-full">
           {CLOTHING_TYPES.map((val) => (
@@ -69,7 +69,7 @@ export const Listings = () => {
             onClick={() => {
               setIsShopping(!isShopping);
             }}
-            className={`font-semibold cursor-pointer ${isShopping ? `underline` : ``}`}
+            className={`text-sm hover:underline cursor-pointer ${isShopping ? `underline` : ``}`}
           >
             Shop
           </li>
@@ -77,16 +77,16 @@ export const Listings = () => {
             onClick={() => {
               setIsShopping(!isShopping);
             }}
-            className={`font-semibold cursor-pointer ${isShopping ? `` : `underline`}`}
+            className={`text-sm hover:underline cursor-pointer ${isShopping ? `` : `underline`}`}
           >
             Sell
           </li>
         </ul>
       </div>
-      <div className="w-full h-0.5 rounded bg-black"></div>
+      <div className="w-full h-px rounded bg-black"></div>
       <div>
         {filteredListings.length === 0 ? (
-          <p className="mt-4 text-gray-500">No listings found.</p>
+          <p className="mt-4 text-gray-500 text-sm">No listings found.</p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             {filteredListings.map((item) => (

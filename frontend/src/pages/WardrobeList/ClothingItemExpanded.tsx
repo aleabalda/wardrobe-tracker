@@ -90,7 +90,7 @@ export const ClothingItemExpanded = () => {
       <BlurredImage
         src={item.image_url}
         alt={item.name}
-        className="h-full w-2/3"
+        className="h-full w-2/3 shadow-xl"
       />
       <div className="relative flex h-full w-1/3 flex-col gap-2">
         {/* Follow facebook marketplace format */}
@@ -109,26 +109,34 @@ export const ClothingItemExpanded = () => {
 
         {error && <p className="text-red-600">{error}</p>}
 
-        <div className="absolute bottom-0 left-0 flex gap-3">
+        <div className="absolute bottom-0 left-0 flex gap-4">
           <button
             type="button"
+            className="cursor-pointer text-sm underline"
             onClick={() => {
-              setIsListingItem(true);
+              navigate("/outfits/create-outfit", {
+                state: { itemId: item.id },
+              });
             }}
-            disabled={item.is_for_sale}
-            aria-disabled={item.is_for_sale}
-            title={
-              item.is_for_sale
-                ? "This item is already listed for sale"
-                : undefined
-            }
-            className="border border-black rounded px-4 py-2 font-semibold transition-all ease-in-out enabled:cursor-pointer enabled:hover:bg-black enabled:hover:text-white disabled:cursor-not-allowed disabled:border-dashed disabled:border-gray-400 disabled:bg-gray-200 disabled:text-gray-500"
           >
-            {item.is_for_sale
-              ? "Already Listed For Sale"
-              : "List Item For Sale"}
+            Create Outfit
           </button>
-          <button className="cursor-pointer border border-black hover:bg-black hover:text-white rounded px-4 py-2 font-semibold transition-all ease-in-out">
+          {item.is_for_sale ? (
+            <button type="button" className="cursor-pointer text-sm underline">
+              Go to Listing
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setIsListingItem(true);
+              }}
+              className="cursor-pointer text-sm underline"
+            >
+              List for Sale
+            </button>
+          )}
+          <button type="button" className="cursor-pointer text-sm underline">
             Edit
           </button>
 
@@ -136,7 +144,7 @@ export const ClothingItemExpanded = () => {
             type="button"
             onClick={handleDelete}
             disabled={isDeleting}
-            className="cursor-pointer border border-red-600 hover:bg-red-600 hover:text-white rounded px-4 py-2 font-semibold transition-all ease-in-out disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer text-sm underline"
           >
             {isDeleting ? "Deleting..." : "Delete"}
           </button>

@@ -16,7 +16,7 @@ export const Header = () => {
           <Navbar />
           <button
             onClick={logout}
-            className="rounded py-2 px-4 outline-1 outline-black text-sm cursor-pointer"
+            className="cursor-pointer text-sm hover:underline"
           >
             Logout
           </button>
@@ -25,15 +25,15 @@ export const Header = () => {
         <div className="flex gap-4">
           <button
             onClick={() => nav("/login")}
-            className="bg-amber-400 px-4 py-2 rounded hover:bg-amber-500 hover:cursor-pointer transition-all ease-in-out hover:shadow-md hover:shadow-gray-200"
+            className="hover:cursor-pointer hover:underline text-sm"
           >
             Login
           </button>
           <button
             onClick={() => nav("/register")}
-            className="bg-amber-400 px-4 py-2 rounded hover:bg-amber-500 hover:cursor-pointer transition-all ease-in-out hover:shadow-md hover:shadow-gray-200"
+            className="hover:cursor-pointer hover:underline text-sm"
           >
-            Create Account
+            Register
           </button>
         </div>
       )}

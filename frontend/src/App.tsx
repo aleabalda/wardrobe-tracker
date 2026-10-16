@@ -13,6 +13,9 @@ import { Profile } from "./pages/Profile/Profile";
 import { MyFavourites } from "./pages/Profile/MyFavourites";
 import { MyOutfits } from "./pages/Profile/MyOutfits";
 import { MyTransactions } from "./pages/Profile/MyTransactions";
+import { NotFound } from "./pages/NotFound/NotFound";
+import { Outfits } from "./pages/Outfits/Outfits";
+import { CreateOutfit } from "./pages/Outfits/CreateOutfit";
 
 function App() {
   return (
@@ -29,8 +32,11 @@ function App() {
                 <Route path="outfits" element={<MyOutfits />} />
                 <Route path="transactions" element={<MyTransactions />} />
               </Route>
+              <Route path="/outfits" element={<Outfits />} />
+              <Route path="/outfits/create-outfit" element={<CreateOutfit />} />
               <Route path="/listings" element={<Listings />} />
             </Route>
+            <Route path="*" element={<NotFound />} />
           </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

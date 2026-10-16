@@ -72,7 +72,7 @@ export const Wardrobe = () => {
           <li className="hover:underline cursor-pointer text-sm">Sort</li>
         </ul>
       </div>
-      <div className="w-full h-0.5 rounded bg-black"></div>
+      <div className="w-full h-px rounded bg-black"></div>
       {addingItem && (
         <AddItemForm
           setAddingItem={setAddingItem}
@@ -82,9 +82,9 @@ export const Wardrobe = () => {
       )}
       <div>
         {clothingItems.length === 0 ? (
-          <p className="mt-4 text-gray-500">No clothing items found.</p>
+          <p className="mt-4 text-gray-500 text-sm">No clothing items found.</p>
         ) : filteredItems.length === 0 ? (
-          <p className="mt-4 text-gray-500">
+          <p className="mt-4 text-gray-500 text-sm">
             No clothing items of this type.
           </p>
         ) : (
