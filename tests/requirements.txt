@@ -1,0 +1,13 @@
+# Browser automation. Selenium 4.6+ ships with Selenium Manager, which
+# downloads the matching chromedriver/geckodriver automatically, so
+# webdriver-manager is not needed.
+selenium>=4.25
+
+# Test runner
+pytest>=8.0
+
+# HTML test report (pytest --html=report.html)
+pytest-html>=4.1
+
+# Loads test credentials / URLs from tests/.env
+python-dotenv>=1.0
