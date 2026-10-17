@@ -17,6 +17,21 @@ from selenium.webdriver.support import expected_conditions as EC
     ids=["wardrobe", "listings", "outfits", "profile"],
 )
 def test_nav_link_loads_page(logged_in_driver, wait, link_text, expected_path, heading):
+    """Purpose:
+        Verifies that each link in the navigation bar opens the correct page.
+        The test runs once for each link: Wardrobe, Listings, Outfits and
+        Profile.
+
+    Steps:
+        1. Log in as the test user (lands on /wardrobe).
+        2. Click the nav link being tested.
+
+    Expected result:
+        Wardrobe opens /wardrobe with the heading "All Clothing".
+        Listings opens /listings with the heading "All Clothing".
+        Outfits opens /outfits with the heading "Outfits".
+        Profile opens /profile/favourites with the heading "Favourites".
+    """
     driver = logged_in_driver
 
     wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text))).click()

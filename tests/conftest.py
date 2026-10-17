@@ -109,7 +109,10 @@ def _register_user_via_api(user):
     try:
         urllib.request.urlopen(request, timeout=10)
     except urllib.error.URLError as err:
-        pytest.exit(f"Could not register a test user at {helpers.api_url()} - is the backend running? ({err})")
+        pytest.exit(
+            f"Could not register a test user at {helpers.api_url()} - "
+            f"is the backend running? ({err})"
+        )
 
 
 @pytest.fixture(scope="session")

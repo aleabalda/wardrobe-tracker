@@ -40,6 +40,11 @@ def item_card_link(name):
     return (By.CSS_SELECTOR, f"a[aria-label='View details for {name}']")
 
 
+def item_heading(name):
+    """The item name heading on a clothing item's detail page."""
+    return (By.XPATH, f"//h1[normalize-space()='{name}']")
+
+
 def button_with_text(text):
     return (By.XPATH, f"//button[normalize-space()='{text}']")
 
@@ -58,7 +63,9 @@ def open_add_item_form(driver, wait):
     wait.until(EC.visibility_of_element_located(ADD_ITEM_FORM_TITLE))
 
 
-def fill_add_item_form(driver, name=None, brand=None, item_type=None, size=None, color=None, image_path=None):
+def fill_add_item_form(
+    driver, name=None, brand=None, item_type=None, size=None, color=None, image_path=None
+):
     """Fill in whichever fields are given; leave the rest empty."""
     if name:
         driver.find_element(*NAME_INPUT).send_keys(name)
@@ -74,7 +81,9 @@ def fill_add_item_form(driver, name=None, brand=None, item_type=None, size=None,
         driver.find_element(*IMAGE_INPUT).send_keys(image_path)
 
 
-def add_item(driver, wait, name, image_path, brand="Selenium", item_type="Tops", size="M", color="Navy"):
+def add_item(
+    driver, wait, name, image_path, brand="Selenium", item_type="Tops", size="M", color="Navy"
+):
     """Add an item through the UI and wait until its card shows in the wardrobe."""
     open_add_item_form(driver, wait)
     fill_add_item_form(
