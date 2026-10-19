@@ -101,13 +101,6 @@ def add_item(
         EC.visibility_of_element_located(item_card_link(name))
     )
 
-
-# --- Direct API checks (run inside the logged-in browser) ------------------
-# These use the browser's own login cookie, so they see exactly what the
-# signed-in user would. Useful for confirming something is really gone
-# rather than just not rendered yet.
-
-
 def fetch_wardrobe_items(driver):
     return driver.execute_async_script(
         """
