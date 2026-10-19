@@ -1,17 +1,3 @@
-"""Shared pytest fixtures for the Selenium end-to-end tests.
-
-The app under test is expected to be running already:
-  - frontend (Vite)  -> http://localhost:5173
-  - backend  (API)   -> http://localhost:3000
-
-Command-line options:
-  --browser=chrome|firefox   (default: chrome)
-  --headless                 run without opening a browser window
-  --base-url=URL             override the frontend URL
-  --slow-mo=SECONDS          pause after every click, typing and page load
-                             (handy for screen recordings), e.g. --slow-mo=1
-"""
-
 import json
 import os
 import time
