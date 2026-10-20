@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import CloseIcon from "@mui/icons-material/Close";
 import { fetchClothingItems } from "../../api/wardrobe";
+import { createOutfit } from "../../api/outfits";
 import type { ClothingItem } from "../../types/ClothingItems";
 import {
   CLOTHING_TYPES,
@@ -33,6 +34,8 @@ export const CreateOutfit = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -81,6 +84,21 @@ export const CreateOutfit = () => {
   const selectedItems = clothingItems.filter((item) =>
     selectedIds.includes(item.id),
   );
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const result = await createOutfit(selectedIds);
+      console.log(result);
+      navigate("/outfits");
+    } catch (error) {
+      console.error("Unable to create outfit:", error);
+      setSubmitError("Unable to create outfit.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (isLoading) {
     return <p className="p-12 pt-6">Loading wardrobe...</p>;
@@ -275,6 +293,19 @@ export const CreateOutfit = () => {
               );
             })}
           </div>
+        )}
+        <button
+          type="button"
+          disabled={selectedIds.length === 0 || isSubmitting}
+          onClick={() => {
+            void handleSubmit();
+          }}
+          className="mt-6 w-full cursor-pointer border border-black py-2 text-sm hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-black"
+        >
+          {isSubmitting ? "Submitting..." : "Submit"}
+        </button>
+        {submitError && (
+          <p className="mt-2 text-xs text-red-600">{submitError}</p>
         )}
       </aside>
     </div>

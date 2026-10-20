@@ -69,6 +69,24 @@ router.post("/create", verifyToken, async (req, res) => {
 
     const outfitId = result.insertId;
 
+    // the id is only known after insert, so unnamed outfits get named here
+    if (!name?.trim()) {
+      const date = new Date().toLocaleDateString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+      });
+
+      await connection.query(
+        `
+        UPDATE outfits
+        SET name = ?
+        WHERE id = ?
+        `,
+        [`Outfit ${outfitId} ${date}`, outfitId],
+      );
+    }
+
     await connection.query(
       `
       INSERT INTO outfit_items
@@ -94,6 +112,84 @@ router.post("/create", verifyToken, async (req, res) => {
     });
   } finally {
     connection.release();
+  }
+});
+
+router.get("/get", verifyToken, async (req, res) => {
+  const userId = req.user!.id;
+
+  try {
+    const [outfitRows] = await pool.query<RowDataPacket[]>(
+      `
+      SELECT id, name, description, created_at
+      FROM outfits
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      `,
+      [userId],
+    );
+
+    if (outfitRows.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    const [itemRows] = await pool.query<RowDataPacket[]>(
+      `
+      SELECT oi.outfit_id, ci.*
+      FROM outfit_items oi
+      JOIN clothing_items ci ON ci.id = oi.clothing_item_id
+      WHERE oi.outfit_id IN (?)
+      `,
+      [outfitRows.map((outfit) => outfit.id)],
+    );
+
+    // group each outfit's clothing items under it
+    const outfits = outfitRows.map((outfit) => ({
+      ...outfit,
+      items: itemRows
+        .filter((item) => item.outfit_id === outfit.id)
+        .map(({ outfit_id, image_public_id, ...item }) => item),
+    }));
+
+    return res.status(200).json(outfits);
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      message: "Failed to fetch outfits.",
+    });
+  }
+});
+
+router.delete("/:id", verifyToken, async (req, res) => {
+  const userId = req.user!.id;
+  const outfitId = Number(req.params.id);
+
+  if (!Number.isInteger(outfitId) || outfitId <= 0) {
+    return res.status(400).json({ message: "Invalid outfit id." });
+  }
+
+  try {
+    // outfit_items rows are removed by ON DELETE CASCADE
+    const [result] = await pool.query<ResultSetHeader>(
+      `
+      DELETE FROM outfits
+      WHERE id = ? AND user_id = ?
+      `,
+      [outfitId, userId],
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Outfit not found." });
+    }
+
+    return res.status(200).json({ message: "Outfit deleted successfully." });
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      message: "Failed to delete outfit.",
+    });
   }
 });
 

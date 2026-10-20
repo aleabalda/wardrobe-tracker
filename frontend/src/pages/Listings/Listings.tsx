@@ -40,7 +40,6 @@ export const Listings = () => {
     <div className="p-12 pt-6">
       <div className="mb-8">
         <h2 className="text-4xl mb-4">{activeClothingType}</h2>
-        {/* include code here to display all types of clothes (jackets, jeans, t-shirts, dresses, etc.) */}
         <div className="flex gap-4 overflow-x-auto w-full">
           {CLOTHING_TYPES.map(({ type, image }) => (
             <button
@@ -69,7 +68,7 @@ export const Listings = () => {
           ))}
         </div>
       </div>
-      <div className="mb-2">
+      <div className="mb-2 flex items-center justify-between">
         <ul className="flex gap-4">
           <li
             onClick={() => {
@@ -88,6 +87,11 @@ export const Listings = () => {
             Sell
           </li>
         </ul>
+        {!isShopping && (
+          <button className="text-sm underline cursor-pointer">
+            Create Listing
+          </button>
+        )}
       </div>
       <div className="w-full h-px rounded bg-black"></div>
       <div>

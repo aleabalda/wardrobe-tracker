@@ -1,6 +1,5 @@
 import type { ListingItem } from "../types/ListingItem";
 import { Link } from "react-router-dom";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 
 export const ListingItemCard = ({ item }: { item: ListingItem }) => {
   return (
@@ -16,15 +15,17 @@ export const ListingItemCard = ({ item }: { item: ListingItem }) => {
           className="block w-full hover:border hover:border-black aspect-9/16 object-cover transition-all ease-in-out duration-150 group-hover:scale-105 group-focus-visible:scale-105"
         />
         <div className="absolute inset-0 flex items-center justify-center rounded bg-black/20 opacity-0 transition-opacity ease-in-out duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
-          <span className="flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-black shadow">
-            <VisibilityOutlinedIcon fontSize="small" />
+          <span className="flex items-center gap-1 rounded bg-white px-3 py-1.5 text-sm text-black shadow">
             View details
           </span>
         </div>
       </Link>
-      <p className="text-lg font-semibold">{item.name}</p>
+      <div className="flex justify-between items-center">
+        <p className="text-lg font-semibold">{item.name}</p>
+        <p className="text-sm">${item.price}</p>
+      </div>
       <p className="text-sm text-gray-600">
-        {item.brand} | Size {item.size} | ${item.price}
+        {item.brand} | Size {item.size}
       </p>
     </div>
   );

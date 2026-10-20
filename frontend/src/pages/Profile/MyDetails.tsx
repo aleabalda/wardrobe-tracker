@@ -96,8 +96,8 @@ export const MyDetails = () => {
             <p>{user.phone_number}</p>
           </div>
         )}
-        <button className="rounded mt-4 py-2 px-4 outline-1 outline-black font-semibold cursor-pointer">
-          Edit
+        <button className="cursor-pointer text-sm underline mt-3">
+          Edit Profile
         </button>
       </div>
     </div>
