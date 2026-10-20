@@ -51,29 +51,31 @@ export const MyDetails = () => {
     <div className="w-72 h-full pr-8 border-r-2 border-r-black flex flex-col items-center">
       <h2 className="text-xl font-semibold mb-2">Details</h2>
       <div className="flex flex-col items-center gap-2">
-        <button
-          type="button"
-          disabled={isUploadingAvatar}
-          onClick={() => fileInputRef.current?.click()}
-          className="rounded-full cursor-pointer disabled:cursor-wait"
-          title="Change profile picture"
-        >
-          <img
-            src={user.avatar_url ?? avatar}
-            alt="avatar"
-            className={`size-50 rounded-full border-2 border-black object-cover ${
-              isUploadingAvatar ? "opacity-50" : "hover:opacity-80"
-            }`}
+        <div className="flex gap-2 items-center">
+          <button
+            type="button"
+            disabled={isUploadingAvatar}
+            onClick={() => fileInputRef.current?.click()}
+            className="rounded-full cursor-pointer disabled:cursor-wait"
+            title="Change profile picture"
+          >
+            <img
+              src={user.avatar_url ?? avatar}
+              alt="avatar"
+              className={`size-10 rounded-full border-2 border-black object-cover ${
+                isUploadingAvatar ? "opacity-50" : "hover:opacity-80"
+              }`}
+            />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarChange}
           />
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleAvatarChange}
-        />
-        <p className="text-xl font-semibold">{user.username.toUpperCase()}</p>
+          <p className="text-xl font-semibold">{user.username.toUpperCase()}</p>
+        </div>
         <div className="flex gap-1 items-center">
           <span>
             <PersonIcon fontSize="small" />
