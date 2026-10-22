@@ -109,4 +109,45 @@ router.get("/get", verifyToken, async (req, res) => {
   }
 });
 
+// any logged in user can view a listing, not just the seller
+router.get("/:id", verifyToken, async (req, res) => {
+  const listingId = Number(req.params.id);
+
+  if (!Number.isInteger(listingId) || listingId <= 0) {
+    return res.status(400).json({ message: "Invalid listing id." });
+  }
+
+  try {
+    const [rows] = await pool.query<RowDataPacket[]>(
+      `
+      SELECT
+        listings.*,
+        clothing_items.name,
+        clothing_items.description,
+        clothing_items.brand,
+        clothing_items.type,
+        clothing_items.color,
+        clothing_items.size,
+        clothing_items.image_url
+      FROM listings
+      JOIN clothing_items ON listings.clothing_item_id = clothing_items.id
+      WHERE listings.id = ?
+      `,
+      [listingId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Listing not found." });
+    }
+
+    return res.status(200).json(rows[0]);
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      message: "Failed to fetch listing.",
+    });
+  }
+});
+
 export default router;

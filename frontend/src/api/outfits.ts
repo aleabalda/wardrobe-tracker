@@ -50,3 +50,27 @@ export const deleteOutfit = async (id: number): Promise<void> => {
     throw new Error("Failed to delete outfit");
   }
 };
+
+export const updateOutfitFavourite = async (
+  id: number,
+  isFavourite: boolean,
+): Promise<boolean> => {
+  const res = await fetch(`${API_BASE_URL}/favourite/${id}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      is_favourite: isFavourite,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to update outfit favourite");
+  }
+
+  const data = await res.json();
+
+  return data.is_favourite;
+};

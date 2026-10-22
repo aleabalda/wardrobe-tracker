@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { deleteOutfit, fetchOutfits } from "../../api/outfits";
+import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
+import IconButton from "@mui/material/IconButton";
+import {
+  deleteOutfit,
+  fetchOutfits,
+  updateOutfitFavourite,
+} from "../../api/outfits";
 import type { Outfit } from "../../types/Outfit";
 import { Toast } from "../../components/ui/Toast";
 
@@ -14,6 +21,9 @@ export const Outfits = () => {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [updatingFavouriteIds, setUpdatingFavouriteIds] = useState<number[]>(
+    [],
+  );
 
   useEffect(() => {
     const loadOutfits = async () => {
@@ -44,6 +54,36 @@ export const Outfits = () => {
       setDeleteError("Unable to delete outfit.");
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const setOutfitFavourite = (id: number, isFavourite: boolean) => {
+    setOutfits((current) =>
+      current.map((outfit) =>
+        outfit.id === id ? { ...outfit, is_favourite: isFavourite } : outfit,
+      ),
+    );
+  };
+
+  const handleFavourite = async (outfit: Outfit) => {
+    if (updatingFavouriteIds.includes(outfit.id)) return;
+
+    const newValue = !outfit.is_favourite;
+
+    setOutfitFavourite(outfit.id, newValue);
+    setUpdatingFavouriteIds((current) => [...current, outfit.id]);
+
+    try {
+      const savedValue = await updateOutfitFavourite(outfit.id, newValue);
+      setOutfitFavourite(outfit.id, savedValue);
+    } catch (error) {
+      console.error("Failed to update favourite:", error);
+      // Revert optimistic update
+      setOutfitFavourite(outfit.id, !newValue);
+    } finally {
+      setUpdatingFavouriteIds((current) =>
+        current.filter((id) => id !== outfit.id),
+      );
     }
   };
 
@@ -79,8 +119,8 @@ export const Outfits = () => {
         <div className="flex flex-col gap-8">
           {outfits.map((outfit) => (
             <section key={outfit.id}>
-              <div className="mb-2 flex items-baseline justify-between">
-                <div className="flex items-baseline gap-3">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-3">
                   <h2 className="text-lg font-semibold">
                     {outfit.name ?? "Untitled Outfit"}
                   </h2>
@@ -88,6 +128,23 @@ export const Outfits = () => {
                     {outfit.items.length}{" "}
                     {outfit.items.length === 1 ? "item" : "items"}
                   </p>
+                  <IconButton
+                    aria-label={
+                      outfit.is_favourite
+                        ? "Remove outfit from favourites"
+                        : "Add outfit to favourites"
+                    }
+                    disabled={updatingFavouriteIds.includes(outfit.id)}
+                    onClick={() => {
+                      void handleFavourite(outfit);
+                    }}
+                  >
+                    {outfit.is_favourite ? (
+                      <BookmarkIcon fontSize="small" />
+                    ) : (
+                      <BookmarkBorderIcon />
+                    )}
+                  </IconButton>
                 </div>
                 <button
                   type="button"

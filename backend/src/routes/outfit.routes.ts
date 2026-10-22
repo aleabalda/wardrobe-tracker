@@ -121,7 +121,7 @@ router.get("/get", verifyToken, async (req, res) => {
   try {
     const [outfitRows] = await pool.query<RowDataPacket[]>(
       `
-      SELECT id, name, description, created_at
+      SELECT id, name, description, is_favourite, created_at
       FROM outfits
       WHERE user_id = ?
       ORDER BY created_at DESC
@@ -189,6 +189,46 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
     return res.status(500).json({
       message: "Failed to delete outfit.",
+    });
+  }
+});
+
+router.put("/favourite/:id", verifyToken, async (req, res) => {
+  const userId = req.user!.id;
+  const outfitId = Number(req.params.id);
+  const { is_favourite } = req.body;
+
+  if (!Number.isInteger(outfitId) || outfitId <= 0) {
+    return res.status(400).json({ message: "Invalid outfit id." });
+  }
+
+  if (typeof is_favourite !== "boolean") {
+    return res.status(400).json({ message: "is_favourite must be a boolean." });
+  }
+
+  try {
+    const [result] = await pool.query<ResultSetHeader>(
+      `
+      UPDATE outfits
+      SET is_favourite = ?
+      WHERE id = ? AND user_id = ?
+      `,
+      [is_favourite, outfitId, userId],
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Outfit not found." });
+    }
+
+    return res.status(200).json({
+      message: "Favourite updated successfully.",
+      is_favourite,
+    });
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      message: "Failed to update favourite.",
     });
   }
 });

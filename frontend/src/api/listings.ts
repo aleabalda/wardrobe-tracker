@@ -43,3 +43,18 @@ export const fetchAllListings = async (): Promise<ListingItem[]> => {
 
   return res.json() as Promise<ListingItem[]>;
 };
+
+export const fetchListingById = async (id: string): Promise<ListingItem> => {
+  const res = await fetch(`${API_BASE_URL}/${id}`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      `Failed to fetch listing: ${res.status} ${res.statusText}`,
+    );
+  }
+
+  return res.json() as Promise<ListingItem>;
+};

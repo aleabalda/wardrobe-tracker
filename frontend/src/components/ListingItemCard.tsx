@@ -1,11 +1,19 @@
 import type { ListingItem } from "../types/ListingItem";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export const ListingItemCard = ({ item }: { item: ListingItem }) => {
+  const { auth } = useAuth();
+  // sellers manage their own item; everyone else gets the read-only listing
+  const detailsPath =
+    item.seller_id === auth.userId
+      ? `/wardrobe/${item.clothing_item_id}`
+      : `/listings/${item.id}`;
+
   return (
     <div>
       <Link
-        to={`/wardrobe/${item.clothing_item_id}`}
+        to={detailsPath}
         aria-label={`View details for ${item.name}`}
         className="group relative block mb-1 overflow-hidden"
       >

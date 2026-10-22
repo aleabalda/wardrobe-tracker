@@ -8,11 +8,37 @@ import {
   type ClothingType,
 } from "../../types/clothingItemTypes";
 
+const SORT_OPTIONS = [
+  { value: "newest", label: "Recently added" },
+  { value: "oldest", label: "Oldest" },
+  { value: "name-asc", label: "Name (A-Z)" },
+  { value: "name-desc", label: "Name (Z-A)" },
+] as const;
+
+type SortOption = (typeof SORT_OPTIONS)[number]["value"];
+
+// ids are auto-incremented, so they follow creation order. Items just added
+// through AddItemForm don't come back with created_at, so ids are used instead
+const compareItems = (a: ClothingItem, b: ClothingItem, sort: SortOption) => {
+  switch (sort) {
+    case "newest":
+      return b.id - a.id;
+    case "oldest":
+      return a.id - b.id;
+    case "name-asc":
+      return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+    case "name-desc":
+      return b.name.localeCompare(a.name, undefined, { sensitivity: "base" });
+  }
+};
+
 export const Wardrobe = () => {
   const [addingItem, setAddingItem] = useState<boolean>(false);
   const [clothingItems, setClothingItems] = useState<ClothingItem[]>([]);
   const [activeClothingType, setActiveClothingType] =
     useState<ClothingType>("All Clothing");
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [isSortOpen, setIsSortOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -27,10 +53,16 @@ export const Wardrobe = () => {
     void fetchItems();
   }, []);
 
-  const filteredItems =
-    activeClothingType === "All Clothing"
+  // copied before sorting so the clothingItems state isn't mutated
+  const filteredItems = [
+    ...(activeClothingType === "All Clothing"
       ? clothingItems
-      : clothingItems.filter((item) => item.type === activeClothingType);
+      : clothingItems.filter((item) => item.type === activeClothingType)),
+  ].sort((a, b) => compareItems(a, b, sortOption));
+
+  const activeSortLabel = SORT_OPTIONS.find(
+    ({ value }) => value === sortOption,
+  )?.label;
 
   return (
     <div className="p-12 pt-6">
@@ -75,7 +107,51 @@ export const Wardrobe = () => {
             Add
           </li>
           <li className=" cursor-pointer hover:underline text-sm">Filter</li>
-          <li className="hover:underline cursor-pointer text-sm">Sort</li>
+          <li className="relative text-sm">
+            <button
+              type="button"
+              aria-expanded={isSortOpen}
+              onClick={() => {
+                setIsSortOpen(!isSortOpen);
+              }}
+              className="cursor-pointer hover:underline"
+            >
+              Sort: {activeSortLabel} {isSortOpen ? "▴" : "▾"}
+            </button>
+            {isSortOpen && (
+              <>
+                {/* invisible backdrop so clicking anywhere else closes the menu */}
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => {
+                    setIsSortOpen(false);
+                  }}
+                ></div>
+                <ul
+                  aria-label="Sort clothing items"
+                  className="absolute left-0 top-full z-20 mt-2 w-44 border border-black bg-white py-1 shadow-lg"
+                >
+                  {SORT_OPTIONS.map(({ value, label }) => (
+                    <li key={value}>
+                      <button
+                        type="button"
+                        aria-pressed={sortOption === value}
+                        onClick={() => {
+                          setSortOption(value);
+                          setIsSortOpen(false);
+                        }}
+                        className={`w-full cursor-pointer px-3 py-1.5 text-left hover:underline ${
+                          sortOption === value ? "underline" : ""
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </li>
         </ul>
       </div>
       <div className="w-full h-px rounded bg-black"></div>

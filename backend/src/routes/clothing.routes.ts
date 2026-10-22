@@ -88,12 +88,19 @@ router.post("/add", verifyToken, upload.single("image"), async (req, res) => {
     );
 
     console.log("Database insert result:", result);
-    res.status(201).json({
-      id: (result as any).insertId,
-      name,
-      imageUrl,
-    });
-    console.log("Clothing item created with ID:", (result as any).insertId);
+    const insertId = (result as ResultSetHeader).insertId;
+
+    // the item is saved now, so its image must not be cleaned up on a later error
+    uploadedImagePublicId = null;
+
+    // return the saved row so the client has every field (defaults included)
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT * FROM clothing_items WHERE id = ?`,
+      [insertId],
+    );
+
+    res.status(201).json(rows[0]);
+    console.log("Clothing item created with ID:", insertId);
   } catch (err) {
     console.error(err);
 

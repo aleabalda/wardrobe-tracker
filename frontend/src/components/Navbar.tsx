@@ -1,29 +1,36 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+
+// `section` is the base path that marks the link as active, so e.g. Profile
+// stays underlined on every /profile/* page, not just /profile/favourites
+const NAV_LINKS = [
+  { label: "Wardrobe", to: "/wardrobe", section: "/wardrobe" },
+  { label: "Listings", to: "/listings", section: "/listings" },
+  { label: "Outfits", to: "/outfits", section: "/outfits" },
+  { label: "Profile", to: "/profile/favourites", section: "/profile" },
+];
 
 export const Navbar = () => {
+  const { pathname } = useLocation();
+
   return (
     <nav>
       <ul className="flex gap-4">
-        <li>
-          <Link to={"/wardrobe"} className="underline text-sm">
-            Wardrobe
-          </Link>
-        </li>
-        <li>
-          <Link to={"/listings"} className="underline text-sm">
-            Listings
-          </Link>
-        </li>
-        <li>
-          <Link to={"/outfits"} className="underline text-sm">
-            Outfits
-          </Link>
-        </li>
-        <li>
-          <Link to={"/profile/favourites"} className="underline text-sm">
-            Profile
-          </Link>
-        </li>
+        {NAV_LINKS.map(({ label, to, section }) => {
+          const isActive =
+            pathname === section || pathname.startsWith(`${section}/`);
+
+          return (
+            <li key={label}>
+              <Link
+                to={to}
+                aria-current={isActive ? "page" : undefined}
+                className={`text-sm ${isActive ? "underline" : "hover:underline"}`}
+              >
+                {label}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

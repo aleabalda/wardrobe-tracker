@@ -9,6 +9,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ClothingItemExpanded } from "./pages/Wardrobe/ClothingItemExpanded";
 import { Listings } from "./pages/Listings/Listings";
+import { ListingItemExpanded } from "./pages/Listings/ListingItemExpanded";
 import { Profile } from "./pages/Profile/Profile";
 import { MyFavourites } from "./pages/Profile/MyFavourites";
 import { MyOutfits } from "./pages/Profile/MyOutfits";
@@ -35,6 +36,7 @@ function App() {
               <Route path="/outfits" element={<Outfits />} />
               <Route path="/outfits/create-outfit" element={<CreateOutfit />} />
               <Route path="/listings" element={<Listings />} />
+              <Route path="/listings/:id" element={<ListingItemExpanded />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Route>

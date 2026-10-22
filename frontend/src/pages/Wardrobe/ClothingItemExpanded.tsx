@@ -110,21 +110,8 @@ export const ClothingItemExpanded = () => {
         {error && <p className="text-red-600">{error}</p>}
 
         <div className="absolute bottom-0 left-0 flex gap-4">
-          <button
-            type="button"
-            className="cursor-pointer text-sm underline"
-            onClick={() => {
-              navigate("/outfits/create-outfit", {
-                state: { itemId: item.id },
-              });
-            }}
-          >
-            Create Outfit
-          </button>
           {item.is_for_sale ? (
-            <button type="button" className="cursor-pointer text-sm underline">
-              Go to Listing
-            </button>
+            <p className="text-sm">Item is Listed For Sale</p>
           ) : (
             <button
               type="button"
@@ -136,6 +123,17 @@ export const ClothingItemExpanded = () => {
               List for Sale
             </button>
           )}
+          <button
+            type="button"
+            className="cursor-pointer text-sm underline"
+            onClick={() => {
+              navigate("/outfits/create-outfit", {
+                state: { itemId: item.id },
+              });
+            }}
+          >
+            Create Outfit
+          </button>
           <button type="button" className="cursor-pointer text-sm underline">
             Edit
           </button>
