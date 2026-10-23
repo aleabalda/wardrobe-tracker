@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Navbar } from "./Navbar";
 
@@ -9,8 +9,10 @@ export const Header = () => {
   if (auth.loading) return null;
 
   return (
-    <header className="flex items-center justify-between p-4">
-      <h1 className="font-semibold text-4xl">Wardrobe.io</h1>
+    <header className="flex items-center justify-between bg-black px-12 py-5 text-white">
+      <h1 className="text-2xl font-semibold">
+        <Link to="/">Wardrobe.io</Link>
+      </h1>
       {auth.isAuthenticated ? (
         <div className="flex items-center gap-6">
           <Navbar />

@@ -48,7 +48,7 @@ export const MyDetails = () => {
     return <div>Loading...</div>;
   }
   return (
-    <div className="w-72 h-full pr-8 border-r-2 border-r-black flex flex-col items-center">
+    <div className="w-72 h-full pr-8 border-r border-r-black flex flex-col items-center">
       <h2 className="text-xl font-semibold mb-2">Details</h2>
       <div className="flex flex-col items-center gap-2">
         <div className="flex gap-2 items-center">

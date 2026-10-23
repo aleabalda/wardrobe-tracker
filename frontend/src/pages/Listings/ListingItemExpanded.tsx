@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { BlurredImage } from "../../components/ui/BlurredImage";
 
 import type { ListingItem } from "../../types/ListingItem";
 import { fetchListingById } from "../../api/listings";
+import { startConversation } from "../../api/conversations";
+import { useAuth } from "../../context/AuthContext";
 
 // read-only view of another user's listing, so no edit/delete/outfit actions
 export const ListingItemExpanded = () => {
@@ -11,6 +13,10 @@ export const ListingItemExpanded = () => {
 
   const [item, setItem] = useState<ListingItem | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isStartingConversation, setIsStartingConversation] =
+    useState<boolean>(false);
+  const { auth } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!id) {
@@ -33,6 +39,23 @@ export const ListingItemExpanded = () => {
 
     void loadItem();
   }, [id]);
+
+  const handleMessage = async () => {
+    if (!item || isStartingConversation) return;
+
+    try {
+      setIsStartingConversation(true);
+      setError(null);
+
+      const conversation = await startConversation(item.id);
+      navigate(`/profile/messages/${conversation.id}`);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Unable to message seller.",
+      );
+      setIsStartingConversation(false);
+    }
+  };
 
   if (error && !item) {
     return <p className="p-4">{error}</p>;
@@ -63,6 +86,24 @@ export const ListingItemExpanded = () => {
         <p className="">{item.description}</p>
 
         {item.price !== null && <p>${item.price}</p>}
+
+        {error && <p className="text-red-600">{error}</p>}
+
+        {/* sellers can't message themselves about their own listing */}
+        {item.seller_id !== auth.userId && (
+          <div className="absolute bottom-0 left-0 flex gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                void handleMessage();
+              }}
+              disabled={isStartingConversation}
+              className="cursor-pointer text-sm underline"
+            >
+              {isStartingConversation ? "Opening..." : "Message"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

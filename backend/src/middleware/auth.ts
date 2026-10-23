@@ -21,12 +21,9 @@ declare global {
   }
 }
 
-export function verifyToken(req: Request, res: Response, next: NextFunction) {
-  const token = req.cookies?.token;
-
-  if (!token) {
-    return res.status(401).json({ error: "Access denied" });
-  }
+// returns the user id from a login token, or null if it's missing or invalid
+export function getUserIdFromToken(token: string | undefined): number | null {
+  if (!token) return null;
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
@@ -36,17 +33,31 @@ export function verifyToken(req: Request, res: Response, next: NextFunction) {
       decoded === null ||
       !("userId" in decoded)
     ) {
-      return res.status(401).json({ error: "Invalid token" });
+      return null;
     }
 
-    const payload = decoded as AuthTokenPayload;
-
-    req.user = {
-      id: payload.userId,
-    };
-
-    next();
+    return (decoded as AuthTokenPayload).userId;
   } catch {
+    return null;
+  }
+}
+
+export function verifyToken(req: Request, res: Response, next: NextFunction) {
+  const token = req.cookies?.token;
+
+  if (!token) {
+    return res.status(401).json({ error: "Access denied" });
+  }
+
+  const userId = getUserIdFromToken(token);
+
+  if (userId === null) {
     return res.status(401).json({ error: "Invalid token" });
   }
+
+  req.user = {
+    id: userId,
+  };
+
+  next();
 }

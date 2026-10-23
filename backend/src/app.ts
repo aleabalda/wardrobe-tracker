@@ -5,7 +5,8 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
+// shared with the socket server so both accept the same frontends
+export const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
 
 app.use(
   cors({

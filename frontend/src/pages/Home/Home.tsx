@@ -3,7 +3,6 @@ import { MainFeatureSection } from "./MainFeatureSection";
 import { SecondaryFeatureSection } from "./SecondaryFeatureSection";
 import { TripleFeaturesSection } from "./TripleFeaturesSection";
 import { FinalCTA } from "./FinalCTA";
-import { Footer } from "../../components/Footer";
 
 export const Home = () => {
   return (
@@ -13,7 +12,6 @@ export const Home = () => {
       <SecondaryFeatureSection />
       <TripleFeaturesSection />
       <FinalCTA />
-      <Footer />
     </>
   );
 };

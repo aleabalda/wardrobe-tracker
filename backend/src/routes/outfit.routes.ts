@@ -117,13 +117,15 @@ router.post("/create", verifyToken, async (req, res) => {
 
 router.get("/get", verifyToken, async (req, res) => {
   const userId = req.user!.id;
+  // optional ?favourite=true to only return favourited outfits
+  const favouritesOnly = req.query.favourite === "true";
 
   try {
     const [outfitRows] = await pool.query<RowDataPacket[]>(
       `
       SELECT id, name, description, is_favourite, created_at
       FROM outfits
-      WHERE user_id = ?
+      WHERE user_id = ?${favouritesOnly ? " AND is_favourite = 1" : ""}
       ORDER BY created_at DESC
       `,
       [userId],
@@ -157,6 +159,51 @@ router.get("/get", verifyToken, async (req, res) => {
 
     return res.status(500).json({
       message: "Failed to fetch outfits.",
+    });
+  }
+});
+
+router.get("/:id", verifyToken, async (req, res) => {
+  const userId = req.user!.id;
+  const outfitId = Number(req.params.id);
+
+  if (!Number.isInteger(outfitId) || outfitId <= 0) {
+    return res.status(400).json({ message: "Invalid outfit id." });
+  }
+
+  try {
+    const [outfitRows] = await pool.query<RowDataPacket[]>(
+      `
+      SELECT id, name, description, is_favourite, created_at
+      FROM outfits
+      WHERE id = ? AND user_id = ?
+      `,
+      [outfitId, userId],
+    );
+
+    if (outfitRows.length === 0) {
+      return res.status(404).json({ message: "Outfit not found." });
+    }
+
+    const [itemRows] = await pool.query<RowDataPacket[]>(
+      `
+      SELECT ci.*
+      FROM outfit_items oi
+      JOIN clothing_items ci ON ci.id = oi.clothing_item_id
+      WHERE oi.outfit_id = ?
+      `,
+      [outfitId],
+    );
+
+    return res.status(200).json({
+      ...outfitRows[0],
+      items: itemRows.map(({ image_public_id, ...item }) => item),
+    });
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      message: "Failed to fetch outfit.",
     });
   }
 });

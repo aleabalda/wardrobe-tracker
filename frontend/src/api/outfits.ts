@@ -27,14 +27,30 @@ export const createOutfit = async (
   return res.json();
 };
 
-export const fetchOutfits = async (): Promise<Outfit[]> => {
-  const res = await fetch(`${API_BASE_URL}/get`, {
+export const fetchOutfits = async (
+  favouritesOnly = false,
+): Promise<Outfit[]> => {
+  const query = favouritesOnly ? "?favourite=true" : "";
+  const res = await fetch(`${API_BASE_URL}/get${query}`, {
     method: "GET",
     credentials: "include",
   });
 
   if (!res.ok) {
     throw new Error("Failed to fetch outfits");
+  }
+
+  return res.json();
+};
+
+export const fetchOutfitById = async (id: string): Promise<Outfit> => {
+  const res = await fetch(`${API_BASE_URL}/${id}`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch outfit");
   }
 
   return res.json();

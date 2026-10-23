@@ -122,7 +122,12 @@ export const Outfits = () => {
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h2 className="text-lg font-semibold">
-                    {outfit.name ?? "Untitled Outfit"}
+                    <Link
+                      to={`/outfits/${outfit.id}`}
+                      className="hover:underline"
+                    >
+                      {outfit.name ?? "Untitled Outfit"}
+                    </Link>
                   </h2>
                   <p className="text-xs text-gray-500">
                     {outfit.items.length}{" "}

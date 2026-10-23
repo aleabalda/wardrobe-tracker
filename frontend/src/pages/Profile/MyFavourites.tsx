@@ -20,7 +20,7 @@ export const MyFavourites = () => {
   }, []);
 
   return (
-    <div>
+    <div className="pl-8">
       <h2 className="text-xl font-semibold mb-2">Favourites</h2>
 
       {favouriteItems.length === 0 ? (
