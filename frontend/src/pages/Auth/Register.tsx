@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { register } from "../../api/registerFunction";
+import { SubmitButton, TextField } from "../../components/ui/FormField";
 
 export const Register = () => {
   const nav = useNavigate();
@@ -38,69 +39,63 @@ export const Register = () => {
   }
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-50">
-      <form className="flex flex-col gap-4 items-center w-80 shadow-xl p-6 bg-white">
-        <input
-          id="first-name"
+    <div className="flex min-h-dvh items-center justify-center bg-white p-4">
+      <form className="flex w-full max-w-md flex-col gap-3">
+        <h1 className="mb-2 text-base">Create Account</h1>
+        <TextField
+          label="First Name"
           name="first-name"
           type="text"
-          placeholder="First Name"
-          className="p-2 rounded border border-gray-300 outline-none  w-full"
+          optional
+          value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
         />
-        <input
-          id="last-name"
+        <TextField
+          label="Last Name"
           name="last-name"
           type="text"
-          placeholder="Last Name"
-          className="p-2 rounded border border-gray-300 outline-none  w-full"
+          optional
+          value={lastName}
           onChange={(e) => setLastName(e.target.value)}
         />
-        <input
-          id="username"
+        <TextField
+          label="Username"
           name="username"
           type="text"
-          placeholder="Username"
           required
-          className="p-2 rounded border border-gray-300 outline-none  w-full"
+          value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <input
-          id="email"
+        <TextField
+          label="Email"
           name="email"
           type="email"
-          placeholder="Email"
           required
-          className="p-2 rounded border border-gray-300 outline-none  w-full"
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <input
-          type="tel"
-          id="phone"
+        <TextField
+          label="Phone Number"
           name="phone"
-          placeholder="Phone Number"
-          onChange={(e) => setPhoneNumber(e.target.value)}
+          type="tel"
+          optional
           pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}"
-          className="p-2 rounded border border-gray-300 outline-none  w-full"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
         />
-        <input
-          id="password"
+        <TextField
+          label="Password"
           name="password"
           type="password"
-          placeholder="Password"
           required
-          className="p-2 rounded border border-gray-300 outline-none  w-full"
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button
-          className="w-full p-2 bg-amber-500 rounded-lg shadow-md font-bold hover:bg-amber-600 hover:cursor-pointer transition-all ease-in-out duration-150 mt-2"
-          type="submit"
-          onClick={handleSubmit}
-        >
+        <SubmitButton onClick={handleSubmit} disabled={loading}>
           {loading ? "Creating Account..." : "Create Account"}
-        </button>
-        {error && <p>{error}</p>}
-        <Link to="/login" className="text-sm text-blue-500 hover:underline">
+        </SubmitButton>
+        {error && <p className="text-red-600 text-sm">{error}</p>}
+        <Link to="/login" className="w-fit text-sm underline">
           Already have an account? Login here.
         </Link>
       </form>

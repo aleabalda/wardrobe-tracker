@@ -1,15 +1,22 @@
 import { Outlet } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 
 export const Layout = () => {
+  const { auth } = useAuth();
+
+  // the header scrolls with the page, so --header-height (see Header) lets
+  // full-height pages fill the space below it using the h-page utility
   return (
-    <div className="h-dvh flex flex-col">
+    <main
+      className={`h-dvh overflow-y-auto flex flex-col *:shrink-0 ${
+        auth.isAuthenticated ? "[--header-height:8rem]" : "[--header-height:5rem]"
+      }`}
+    >
       <Header />
-      <main className="flex-1 min-h-0 overflow-y-auto flex flex-col *:shrink-0">
-        <Outlet />
-        <Footer />
-      </main>
-    </div>
+      <Outlet />
+      <Footer />
+    </main>
   );
 };

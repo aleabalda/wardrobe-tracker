@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import IconButton from "@mui/material/IconButton";
 import { ClothingItemCard } from "../../components/ClothingItemCard";
-import { fetchOutfitById, updateOutfitFavourite } from "../../api/outfits";
+import { DeleteOutfitDialog } from "../../components/DeleteOutfitDialog";
+import {
+  deleteOutfit,
+  fetchOutfitById,
+  updateOutfitFavourite,
+} from "../../api/outfits";
 import type { Outfit } from "../../types/Outfit";
 import { CLOTHING_TYPES } from "../../types/clothingItemTypes";
 
@@ -15,10 +20,14 @@ const CATEGORY_ORDER: string[] = CLOTHING_TYPES.map(({ type }) => type).filter(
 
 export const OutfitExpanded = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   const [outfit, setOutfit] = useState<Outfit | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingFavourite, setIsUpdatingFavourite] = useState(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) {
@@ -62,6 +71,26 @@ export const OutfitExpanded = () => {
       );
     } finally {
       setIsUpdatingFavourite(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!outfit) return;
+
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await deleteOutfit(outfit.id);
+      // replace so going back doesn't return to the deleted outfit's page
+      navigate("/outfits", {
+        replace: true,
+        state: { toastMessage: "Outfit was deleted successfully!" },
+      });
+    } catch (error) {
+      console.error("Unable to delete outfit:", error);
+      setDeleteError("Unable to delete outfit.");
+      setIsDeleting(false);
     }
   };
 
@@ -111,10 +140,23 @@ export const OutfitExpanded = () => {
   return (
     // on large screens the page fills the viewport and only the items column
     // scrolls; on smaller screens it stacks and scrolls normally
-    <div className="p-12 pt-6 lg:flex lg:h-full lg:flex-col">
+    <div className="p-12 pt-6 lg:flex lg:h-page lg:flex-col">
       <Link to="/outfits" className="text-xs hover:underline">
         ← Back to Outfits
       </Link>
+
+      {isConfirmingDelete && (
+        <DeleteOutfitDialog
+          isDeleting={isDeleting}
+          error={deleteError}
+          onConfirm={() => {
+            void handleDelete();
+          }}
+          onCancel={() => {
+            setIsConfirmingDelete(false);
+          }}
+        />
+      )}
 
       <div className="mt-2 mb-4 flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-2">
@@ -139,7 +181,19 @@ export const OutfitExpanded = () => {
             )}
           </IconButton>
         </div>
-        <p className="shrink-0 text-xs text-gray-500">Created {createdDate}</p>
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <p className="text-xs text-gray-500">Created {createdDate}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setIsConfirmingDelete(true);
+              setDeleteError(null);
+            }}
+            className="cursor-pointer text-xs underline"
+          >
+            Delete Outfit
+          </button>
+        </div>
       </div>
       <div className="w-full h-px rounded bg-black mb-6"></div>
 

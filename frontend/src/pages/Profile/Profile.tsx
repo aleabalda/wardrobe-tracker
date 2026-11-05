@@ -44,7 +44,7 @@ export const Profile = () => {
     `text-sm cursor-pointer hover:underline ${isActive ? "underline" : ""}`;
 
   return (
-    <div className="h-full px-12 pt-10 flex flex-col gap-2">
+    <div className="h-page px-12 pt-10 flex flex-col gap-2">
       <h2 className="text-xl font-semibold mb-2">Profile</h2>
       <nav>
         <ul className="flex gap-4">

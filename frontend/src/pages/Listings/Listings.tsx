@@ -2,17 +2,47 @@ import { useEffect, useState } from "react";
 import { fetchAllListings } from "../../api/listings";
 import type { ListingItem } from "../../types/ListingItem";
 import { ListingItemCard } from "../../components/ListingItemCard";
+import { ClothingTypeSelector } from "../../components/ClothingTypeSelector";
 import { useAuth } from "../../context/AuthContext";
+import type { ClothingType } from "../../types/clothingItemTypes";
+import { ItemToolbar } from "../../components/ItemToolbar";
 import {
-  CLOTHING_TYPES,
-  type ClothingType,
-} from "../../types/clothingItemTypes";
+  EMPTY_FILTERS,
+  countActiveFilters,
+  matchesFilters,
+  type ItemFilters,
+} from "../../utils/itemFilters";
+
+const SORT_OPTIONS = [
+  { value: "newest", label: "Recently listed" },
+  { value: "oldest", label: "Oldest" },
+  { value: "price-asc", label: "Price (low to high)" },
+  { value: "price-desc", label: "Price (high to low)" },
+] as const;
+
+type SortOption = (typeof SORT_OPTIONS)[number]["value"];
+
+// the API can send decimal prices as strings, and listings without a price go last
+const compareListings = (a: ListingItem, b: ListingItem, sort: SortOption) => {
+  switch (sort) {
+    case "newest":
+      return b.id - a.id;
+    case "oldest":
+      return a.id - b.id;
+    case "price-asc":
+      return Number(a.price ?? Infinity) - Number(b.price ?? Infinity);
+    case "price-desc":
+      return Number(b.price ?? -Infinity) - Number(a.price ?? -Infinity);
+  }
+};
 
 export const Listings = () => {
   const [listings, setListings] = useState<ListingItem[]>([]);
   const [isShopping, setIsShopping] = useState<boolean>(true);
   const [activeClothingType, setActiveClothingType] =
     useState<ClothingType>("All Clothing");
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [filters, setFilters] = useState<ItemFilters>(EMPTY_FILTERS);
   const { auth } = useAuth();
 
   useEffect(() => {
@@ -30,75 +60,72 @@ export const Listings = () => {
   }, []);
 
   // shopping shows other users' listings, selling shows the user's own
-  const filteredListings = listings.filter((item) =>
-    isShopping
-      ? item.seller_id !== auth.userId
-      : item.seller_id === auth.userId,
+  const typeListings = listings.filter(
+    (item) =>
+      (isShopping
+        ? item.seller_id !== auth.userId
+        : item.seller_id === auth.userId) &&
+      (activeClothingType === "All Clothing" ||
+        item.type === activeClothingType),
   );
+
+  const filteredListings = typeListings
+    .filter((item) => matchesFilters(item, filters))
+    .sort((a, b) => compareListings(a, b, sortOption));
 
   return (
     <div className="p-12 pt-6">
-      <div className="mb-8">
-        <h2 className="text-4xl mb-4">{activeClothingType}</h2>
-        <div className="flex gap-4 overflow-x-auto w-full">
-          {CLOTHING_TYPES.map(({ type, image }) => (
+      <ClothingTypeSelector
+        activeType={activeClothingType}
+        onSelect={setActiveClothingType}
+        count={typeListings.length}
+      />
+      <ul className="mb-4 flex gap-4">
+        <li
+          onClick={() => {
+            setIsShopping(!isShopping);
+          }}
+          className={`text-sm hover:underline cursor-pointer ${isShopping ? `underline` : ``}`}
+        >
+          Shop
+        </li>
+        <li
+          onClick={() => {
+            setIsShopping(!isShopping);
+          }}
+          className={`text-sm hover:underline cursor-pointer ${isShopping ? `` : `underline`}`}
+        >
+          Sell
+        </li>
+      </ul>
+      <ItemToolbar
+        items={typeListings}
+        filters={filters}
+        onFiltersChange={setFilters}
+        resultCount={filteredListings.length}
+        sortOptions={SORT_OPTIONS}
+        sortValue={sortOption}
+        onSortChange={setSortOption}
+        action={
+          !isShopping && (
             <button
-              key={type}
-              aria-pressed={activeClothingType === type}
-              className={`cursor-pointer hover:underline ${
-                activeClothingType === type ? "underline" : ""
-              }`}
-              onClick={() => {
-                setActiveClothingType(type);
-              }}
+              type="button"
+              className="cursor-pointer border border-black bg-black px-3 py-1.5 text-sm text-white transition-colors hover:bg-white hover:text-black"
             >
-              <div
-                className={`h-80 w-52 hover:border hover:border-black flex flex-col justify-end ${
-                  activeClothingType === type ? "border border-black" : ""
-                }`}
-              >
-                <img
-                  src={image}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <p className="text-left text-xs mt-2">{type}</p>
+              Create Listing
             </button>
-          ))}
-        </div>
-      </div>
-      <div className="mb-2 flex items-center justify-between">
-        <ul className="flex gap-4">
-          <li
-            onClick={() => {
-              setIsShopping(!isShopping);
-            }}
-            className={`text-sm hover:underline cursor-pointer ${isShopping ? `underline` : ``}`}
-          >
-            Shop
-          </li>
-          <li
-            onClick={() => {
-              setIsShopping(!isShopping);
-            }}
-            className={`text-sm hover:underline cursor-pointer ${isShopping ? `` : `underline`}`}
-          >
-            Sell
-          </li>
-        </ul>
-        {!isShopping && (
-          <button className="text-sm underline cursor-pointer">
-            Create Listing
-          </button>
-        )}
-      </div>
-      <div className="w-full h-px rounded bg-black"></div>
+          )
+        }
+      />
       <div>
         {filteredListings.length === 0 ? (
-          <p className="mt-4 text-gray-500 text-sm">No listings found.</p>
+          <p className="mt-4 text-gray-500 text-sm">
+            {countActiveFilters(filters) > 0
+              ? "No listings match these filters."
+              : "No listings found."}
+          </p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-2 mt-4">
             {filteredListings.map((item) => (
               <ListingItemCard key={item.id} item={item} />
             ))}

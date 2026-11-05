@@ -76,7 +76,7 @@ export const ClothingItemExpanded = () => {
   };
 
   return (
-    <div className="flex h-full gap-3 p-4">
+    <div className="flex h-page gap-3 p-4">
       {isListingItem && (
         <CreateListingForm
           clothingItem={item}

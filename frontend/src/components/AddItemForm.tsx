@@ -1,8 +1,14 @@
 import { useState } from "react";
-import LinearProgress from "@mui/material/LinearProgress";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { motion } from "motion/react";
 import type { ClothingItem } from "../types/ClothingItems";
 import { CLOTHING_TYPES, type ClothingType } from "../types/clothingItemTypes";
+import {
+  FileField,
+  SelectField,
+  SubmitButton,
+  TextAreaField,
+  TextField,
+} from "./ui/FormField";
 
 type ItemClothingType = Exclude<ClothingType, "All Clothing">;
 
@@ -11,16 +17,12 @@ const ITEM_CLOTHING_TYPES = CLOTHING_TYPES.map(({ type }) => type).filter(
   (val): val is ItemClothingType => val !== "All Clothing",
 );
 
-const labelClass = "text-sm";
-const inputClass =
-  "w-full p-3 bg-white rounded outline-1 outline-gray-400 focus:outline-1 focus:outline-black";
-
 export const AddItemForm = ({
-  setAddingItem,
+  onClose,
   clothingItems,
   setClothingItems,
 }: {
-  setAddingItem: (value: boolean) => void;
+  onClose: () => void;
   clothingItems: ClothingItem[];
   setClothingItems: (items: ClothingItem[]) => void;
 }) => {
@@ -64,121 +66,112 @@ export const AddItemForm = ({
       }
       const newItem: ClothingItem = await res.json();
       setClothingItems([...clothingItems, newItem]);
-      setAddingItem(false);
+      onClose();
     } catch (err) {
       console.error(err);
       alert("Error creating clothing item");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-    window.location.reload();
+  };
+
+  // stays open during an upload so it can't be dismissed halfway through
+  const handleClose = () => {
+    if (!isLoading) onClose();
   };
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-10 bg-black/50"
-        onClick={() => {
-          setAddingItem(false);
-        }}
-      ></div>
-      <form
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
+        onClick={handleClose}
+        className="fixed inset-0 z-30 bg-black/50"
+      />
+      <motion.form
         onSubmit={handleSubmit}
-        className="fixed transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 z-20 w-xl max-w-[calc(100vw-2rem)] bg-white border border-black p-6 rounded shadow-lg flex flex-col gap-4"
+        onKeyDown={(e) => {
+          if (e.key === "Escape") handleClose();
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-item-title"
+        initial={{ x: "100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "100%" }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="fixed inset-y-0 right-0 z-40 flex w-122 max-w-full flex-col bg-white shadow-xl"
       >
-        <h2 className="text-lg">Add Clothing Item</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1">
-            <label htmlFor="name-input" className={labelClass}>
-              Name <span className="text-orange-500">*</span>
-            </label>
-            <input
-              id="name-input"
-              className={inputClass}
+        <div className="flex items-center justify-between px-6 py-4">
+          <h2 id="add-item-title" className="text-base">
+            Add Clothing Item
+          </h2>
+          {!isLoading && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="cursor-pointer text-sm underline"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-2">
+          <div className="grid grid-cols-2 gap-3">
+            <TextField
+              label="Name"
+              hint="e.g. Linen shirt"
+              className="col-span-2"
               type="text"
-              placeholder="e.g. Linen shirt"
+              autoFocus
+              required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              required
             />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="brand-input" className={labelClass}>
-              Brand
-            </label>
-            <input
-              id="brand-input"
-              className={inputClass}
+            <TextField
+              label="Brand"
+              hint="e.g. Uniqlo"
+              optional
+              className="col-span-2"
               type="text"
-              placeholder="e.g. Uniqlo"
               value={brand}
               onChange={(e) => setBrand(e.target.value)}
             />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="type-input" className={labelClass}>
-              Type <span className="text-orange-500">*</span>
-            </label>
-            <div className="relative">
-              <select
-                id="type-input"
-                className={`${inputClass} appearance-none cursor-pointer pr-10 ${
-                  type === "" ? "text-gray-400" : ""
-                }`}
-                required
-                value={type}
-                onChange={(e) => setType(e.target.value as ItemClothingType)}
-              >
-                <option value="" disabled>
-                  Select a type
+            <SelectField
+              label="Type"
+              required
+              value={type}
+              onChange={(e) => setType(e.target.value as ItemClothingType)}
+            >
+              {ITEM_CLOTHING_TYPES.map((val) => (
+                <option key={val} value={val}>
+                  {val}
                 </option>
-                {ITEM_CLOTHING_TYPES.map((val) => (
-                  <option key={val} value={val} className="text-black">
-                    {val}
-                  </option>
-                ))}
-              </select>
-              <KeyboardArrowDownIcon
-                fontSize="small"
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-              />
-            </div>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="size-input" className={labelClass}>
-              Size <span className="text-orange-500">*</span>
-            </label>
-            <input
-              id="size-input"
-              className={inputClass}
+              ))}
+            </SelectField>
+            <TextField
+              label="Size"
+              hint="e.g. M"
               type="text"
-              placeholder="e.g. M"
+              required
               value={size}
               onChange={(e) => setSize(e.target.value)}
-              required
             />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="color-input" className={labelClass}>
-              Color <span className="text-orange-500">*</span>
-            </label>
-            <input
-              id="color-input"
-              className={inputClass}
+            <TextField
+              label="Color"
+              hint="e.g. Navy"
+              className="col-span-2"
               type="text"
-              placeholder="e.g. Navy"
+              required
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              required
             />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="image-input" className={labelClass}>
-              Image
-            </label>
-            <input
-              id="image-input"
-              className={`${inputClass} text-sm/6 text-gray-500 file:mr-3 file:cursor-pointer cursor-pointer file:text-black file:transition-all file:ease-in-out hover:file:underline`}
-              type="file"
+            <FileField
+              label="Image"
+              fileName={imageFile?.name}
+              className="col-span-2"
               accept="image/png, image/jpeg"
               onChange={(e) => {
                 if (e.target.files?.[0]) {
@@ -186,43 +179,23 @@ export const AddItemForm = ({
                 }
               }}
             />
-          </div>
-          <div className="col-span-2 flex flex-col gap-1">
-            <label htmlFor="description-input" className={labelClass}>
-              Description
-            </label>
-            <textarea
-              id="description-input"
-              className={`${inputClass} resize-none`}
+            <TextAreaField
+              label="Description"
+              hint="Describe the item"
+              optional
+              className="col-span-2"
               rows={3}
-              placeholder="Describe the item"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
         </div>
-        {isLoading ? (
-          <LinearProgress aria-label="Loading…" />
-        ) : (
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              className="cursor-pointer hover:underline text-sm"
-            >
-              Add Item
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAddingItem(false);
-              }}
-              className="cursor-pointer underline text-sm"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </form>
+        <div className="px-6 py-4">
+          <SubmitButton disabled={isLoading}>
+            {isLoading ? "Adding Item..." : "Add Item"}
+          </SubmitButton>
+        </div>
+      </motion.form>
     </>
   );
 };

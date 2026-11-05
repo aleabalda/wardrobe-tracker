@@ -109,7 +109,7 @@ export const CreateOutfit = () => {
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-page">
       <div className="min-w-0 flex-1 overflow-y-auto p-12 pt-6">
         <div className="mb-4 flex items-baseline justify-between">
           <h2 className="text-4xl">Create Outfit</h2>

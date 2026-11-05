@@ -11,30 +11,28 @@ export const ListingItemCard = ({ item }: { item: ListingItem }) => {
       : `/listings/${item.id}`;
 
   return (
-    <div>
+    <div className="mb-10">
       <Link
         to={detailsPath}
         aria-label={`View details for ${item.name}`}
-        className="group relative block mb-1 overflow-hidden"
+        className="group block overflow-hidden"
       >
         <img
           src={item.image_url}
           alt={item.name}
-          className="block w-full hover:border hover:border-black aspect-9/16 object-cover transition-all ease-in-out duration-150 group-hover:scale-105 group-focus-visible:scale-105"
+          className="block w-full aspect-11/15 object-cover transition-transform ease-in-out duration-300 group-hover:scale-105 group-focus-visible:scale-105"
         />
-        <div className="absolute inset-0 flex items-center justify-center rounded bg-black/20 opacity-0 transition-opacity ease-in-out duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
-          <span className="flex items-center gap-1 rounded bg-white px-3 py-1.5 text-sm text-black shadow">
-            View details
-          </span>
-        </div>
       </Link>
-      <div className="flex justify-between items-center">
-        <p className="text-lg font-semibold">{item.name}</p>
-        <p className="text-sm">${item.price}</p>
+      <div className="px-2 pt-3 text-sm">
+        <div className="flex justify-between items-center">
+          <p>{item.name}</p>
+          {item.price != null && <p className="mt-1">${item.price}</p>}
+        </div>
+        <p className="mt-1 text-gray-600">
+          {[item.brand, `Size ${item.size}`].filter(Boolean).join(" | ")}
+        </p>
+        {item.color && <p className="mt-1 text-gray-600">{item.color}</p>}
       </div>
-      <p className="text-sm text-gray-600">
-        {item.brand} | Size {item.size}
-      </p>
     </div>
   );
 };

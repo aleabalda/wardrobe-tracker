@@ -31,41 +31,47 @@ export const ClothingItemCard = ({ item }: { item: ClothingItem }) => {
   };
 
   return (
-    <div className="mb-14">
+    <div className="mb-10">
       <Link
         to={`/wardrobe/${item.id}`}
         aria-label={`View details for ${item.name}`}
-        className="group relative block mb-1 overflow-hidden shadow-lg transition-shadow ease-in-out duration-150 hover:shadow-xl"
+        className="group block overflow-hidden"
       >
         <img
           src={item.image_url}
           alt={item.name}
-          className="block w-full hover:border hover:border-black aspect-9/16 object-cover transition-all ease-in-out duration-150 group-hover:scale-105 group-focus-visible:scale-105"
+          className="block w-full aspect-11/15 object-cover transition-transform ease-in-out duration-300 group-hover:scale-105 group-focus-visible:scale-105"
         />
-        <div className="absolute inset-0 flex items-center justify-center rounded bg-black/20 opacity-0 transition-opacity ease-in-out duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
-          <span className="flex items-center gap-1 rounded bg-white px-3 py-1.5 text-sm text-black shadow">
-            View Details
-          </span>
-        </div>
       </Link>
-      <div className="flex justify-between items-center">
-        <h2 className="text-sm font-semibold">{item.name}</h2>
-        <IconButton
-          disabled={isUpdatingFavourite}
-          onClick={() => {
-            handleFavourite();
-          }}
-        >
-          {isFavourite ? (
-            <BookmarkIcon fontSize="small" />
-          ) : (
-            <BookmarkBorderIcon />
-          )}
-        </IconButton>
+      <div className="px-2 pt-3 text-sm">
+        <div className="flex items-start justify-between gap-2">
+          <h2 className="min-w-0">{item.name}</h2>
+          <IconButton
+            size="small"
+            edge="end"
+            disabled={isUpdatingFavourite}
+            aria-label={
+              isFavourite ? "Remove from favourites" : "Add to favourites"
+            }
+            onClick={() => {
+              handleFavourite();
+            }}
+            sx={{ color: "inherit", marginTop: "-5px" }}
+          >
+            {isFavourite ? (
+              <BookmarkIcon fontSize="small" />
+            ) : (
+              <BookmarkBorderIcon fontSize="small" />
+            )}
+          </IconButton>
+        </div>
+        <p className="mt-1 text-gray-600 text-xs">
+          {[item.brand, `Size ${item.size}`].filter(Boolean).join(" | ")}
+        </p>
+        {item.color && (
+          <p className="mt-1 text-gray-600 text-xs">{item.color}</p>
+        )}
       </div>
-      <p className="text-xs text-gray-600">
-        {item.brand} | Size {item.size}
-      </p>
     </div>
   );
 };

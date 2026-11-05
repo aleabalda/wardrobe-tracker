@@ -1,12 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence } from "motion/react";
 import { AddItemForm } from "../../components/AddItemForm";
 import { ClothingItemCard } from "../../components/ClothingItemCard";
+import { ClothingTypeSelector } from "../../components/ClothingTypeSelector";
 import { fetchClothingItems } from "../../api/wardrobe";
 import type { ClothingItem } from "../../types/ClothingItems";
+import type { ClothingType } from "../../types/clothingItemTypes";
+import { ItemToolbar } from "../../components/ItemToolbar";
 import {
-  CLOTHING_TYPES,
-  type ClothingType,
-} from "../../types/clothingItemTypes";
+  EMPTY_FILTERS,
+  countActiveFilters,
+  matchesFilters,
+  type ItemFilters,
+} from "../../utils/itemFilters";
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Recently added" },
@@ -34,11 +40,12 @@ const compareItems = (a: ClothingItem, b: ClothingItem, sort: SortOption) => {
 
 export const Wardrobe = () => {
   const [addingItem, setAddingItem] = useState<boolean>(false);
+  const addItemButtonRef = useRef<HTMLButtonElement>(null);
   const [clothingItems, setClothingItems] = useState<ClothingItem[]>([]);
   const [activeClothingType, setActiveClothingType] =
     useState<ClothingType>("All Clothing");
   const [sortOption, setSortOption] = useState<SortOption>("newest");
-  const [isSortOpen, setIsSortOpen] = useState<boolean>(false);
+  const [filters, setFilters] = useState<ItemFilters>(EMPTY_FILTERS);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -53,124 +60,67 @@ export const Wardrobe = () => {
     void fetchItems();
   }, []);
 
-  // copied before sorting so the clothingItems state isn't mutated
-  const filteredItems = [
-    ...(activeClothingType === "All Clothing"
-      ? clothingItems
-      : clothingItems.filter((item) => item.type === activeClothingType)),
-  ].sort((a, b) => compareItems(a, b, sortOption));
+  const typeItems = clothingItems.filter(
+    (item) =>
+      activeClothingType === "All Clothing" ||
+      item.type === activeClothingType,
+  );
 
-  const activeSortLabel = SORT_OPTIONS.find(
-    ({ value }) => value === sortOption,
-  )?.label;
+  const filteredItems = typeItems
+    .filter((item) => matchesFilters(item, filters))
+    .sort((a, b) => compareItems(a, b, sortOption));
 
   return (
     <div className="p-12 pt-6">
-      <div className="mb-8">
-        <h2 className="text-4xl mb-4">{activeClothingType}</h2>
-        <div className="flex gap-4 overflow-x-auto w-full">
-          {CLOTHING_TYPES.map(({ type, image }) => (
-            <button
-              key={type}
-              aria-pressed={activeClothingType === type}
-              className={`cursor-pointer hover:underline ${
-                activeClothingType === type ? "underline" : ""
-              }`}
-              onClick={() => {
-                setActiveClothingType(type);
-              }}
-            >
-              <div
-                className={`h-80 w-52 hover:border hover:border-black flex flex-col justify-end ${
-                  activeClothingType === type ? "border border-black" : ""
-                }`}
-              >
-                <img
-                  src={image}
-                  alt="the type of clothing item"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <p className="text-left text-xs mt-2">{type}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="mb-2 flex justify-between">
-        <ul className="flex gap-3">
-          <li
+      <ClothingTypeSelector
+        activeType={activeClothingType}
+        onSelect={setActiveClothingType}
+        count={typeItems.length}
+      />
+      <ItemToolbar
+        items={typeItems}
+        filters={filters}
+        onFiltersChange={setFilters}
+        resultCount={filteredItems.length}
+        sortOptions={SORT_OPTIONS}
+        sortValue={sortOption}
+        onSortChange={setSortOption}
+        action={
+          <button
+            ref={addItemButtonRef}
+            type="button"
             onClick={() => {
               setAddingItem(true);
             }}
-            className="cursor-pointer hover:underline text-sm"
+            className="cursor-pointer border border-black bg-black px-3 py-1.5 text-sm text-white transition-colors hover:bg-white hover:text-black"
           >
-            Add
-          </li>
-          <li className=" cursor-pointer hover:underline text-sm">Filter</li>
-          <li className="relative text-sm">
-            <button
-              type="button"
-              aria-expanded={isSortOpen}
-              onClick={() => {
-                setIsSortOpen(!isSortOpen);
-              }}
-              className="cursor-pointer hover:underline"
-            >
-              Sort: {activeSortLabel} {isSortOpen ? "▴" : "▾"}
-            </button>
-            {isSortOpen && (
-              <>
-                {/* invisible backdrop so clicking anywhere else closes the menu */}
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => {
-                    setIsSortOpen(false);
-                  }}
-                ></div>
-                <ul
-                  aria-label="Sort clothing items"
-                  className="absolute left-0 top-full z-20 mt-2 w-44 border border-black bg-white py-1 shadow-lg"
-                >
-                  {SORT_OPTIONS.map(({ value, label }) => (
-                    <li key={value}>
-                      <button
-                        type="button"
-                        aria-pressed={sortOption === value}
-                        onClick={() => {
-                          setSortOption(value);
-                          setIsSortOpen(false);
-                        }}
-                        className={`w-full cursor-pointer px-3 py-1.5 text-left hover:underline ${
-                          sortOption === value ? "underline" : ""
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </li>
-        </ul>
-      </div>
-      <div className="w-full h-px rounded bg-black"></div>
-      {addingItem && (
-        <AddItemForm
-          setAddingItem={setAddingItem}
-          clothingItems={clothingItems}
-          setClothingItems={setClothingItems}
-        />
-      )}
+            Add Item
+          </button>
+        }
+      />
+      <AnimatePresence>
+        {addingItem && (
+          <AddItemForm
+            onClose={() => {
+              setAddingItem(false);
+              addItemButtonRef.current?.focus();
+            }}
+            clothingItems={clothingItems}
+            setClothingItems={setClothingItems}
+          />
+        )}
+      </AnimatePresence>
       <div>
         {clothingItems.length === 0 ? (
           <p className="mt-4 text-gray-500 text-sm">No clothing items found.</p>
         ) : filteredItems.length === 0 ? (
           <p className="mt-4 text-gray-500 text-sm">
-            No clothing items of this type.
+            {countActiveFilters(filters) > 0
+              ? "No clothing items match these filters."
+              : "No clothing items of this type."}
           </p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-2 mt-4">
             {filteredItems.map((item) => (
               <ClothingItemCard key={item.id} item={item} />
             ))}

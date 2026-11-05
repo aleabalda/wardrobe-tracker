@@ -2,6 +2,7 @@
 
 @theme {
   --font-display: "Playfair Display", ui-serif, Georgia, serif;
+  --font-title: "Fraunces", ui-serif, Georgia, serif;
 
   --animate-marquee: marquee 40s linear infinite;
   --animate-float: float 6s ease-in-out infinite;
@@ -24,6 +25,11 @@
       transform: translateY(-10px);
     }
   }
+}
+
+/* Fills the screen below the header, for pages with their own scrolling panes */
+@utility h-page {
+  height: calc(100dvh - var(--header-height));
 }
 
 @media (prefers-reduced-motion: reduce) {
