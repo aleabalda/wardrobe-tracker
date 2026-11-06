@@ -1,45 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { fetchUnreadCount } from "../../api/conversations";
-import { useSocket } from "../../context/SocketContext";
 import { MyDetails } from "./MyDetails";
 
 export const Profile = () => {
-  const socket = useSocket();
-  const [unreadCount, setUnreadCount] = useState<number>(0);
-
-  const loadUnreadCount = useCallback(async () => {
-    try {
-      setUnreadCount(await fetchUnreadCount());
-    } catch (error) {
-      console.error("Unable to load unread count:", error);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadUnreadCount();
-  }, [loadUnreadCount]);
-
-  // new messages raise the count, reading a conversation lowers it, and
-  // reconnecting catches up on anything missed while the connection was down
-  useEffect(() => {
-    if (!socket) return;
-
-    const refresh = () => {
-      void loadUnreadCount();
-    };
-
-    socket.on("message:new", refresh);
-    socket.on("conversation:read", refresh);
-    socket.io.on("reconnect", refresh);
-
-    return () => {
-      socket.off("message:new", refresh);
-      socket.off("conversation:read", refresh);
-      socket.io.off("reconnect", refresh);
-    };
-  }, [socket, loadUnreadCount]);
-
   const linkStyle = ({ isActive }: { isActive: boolean }) =>
     `text-sm cursor-pointer hover:underline ${isActive ? "underline" : ""}`;
 
@@ -61,21 +23,6 @@ export const Profile = () => {
           <li>
             <NavLink to="/profile/transactions" className={linkStyle}>
               My Transactions
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/profile/messages"
-              className={(state) =>
-                `${linkStyle(state)} inline-flex items-center gap-0.5`
-              }
-            >
-              My Messages
-              {unreadCount > 0 && (
-                <span aria-label={`${unreadCount} unread`} className="text-sm">
-                  ({unreadCount > 99 ? "99+" : unreadCount})
-                </span>
-              )}
             </NavLink>
           </li>
         </ul>

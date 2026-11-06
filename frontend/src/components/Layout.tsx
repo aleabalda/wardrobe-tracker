@@ -11,7 +11,7 @@ export const Layout = () => {
   return (
     <main
       className={`h-dvh overflow-y-auto flex flex-col *:shrink-0 ${
-        auth.isAuthenticated ? "[--header-height:8rem]" : "[--header-height:5rem]"
+        auth.isAuthenticated ? "[--header-height:8.25rem]" : "[--header-height:5rem]"
       }`}
     >
       <Header />

@@ -15,7 +15,7 @@ const FOOTER_SECTIONS = [
     heading: "Marketplace",
     links: [
       { label: "Shop Listings", to: "/listings" },
-      { label: "Messages", to: "/profile/messages" },
+      { label: "Messages", to: "/messages" },
       { label: "Transactions", to: "/profile/transactions" },
     ],
   },

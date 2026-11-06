@@ -7,6 +7,7 @@ import {
 } from "../../api/conversations";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
+import { TextAreaField } from "../../components/ui/FormField";
 import type { ConversationDetail, Message } from "../../types/Conversation";
 import { formatMessageTime } from "../../utils/formatMessageTime";
 
@@ -124,25 +125,25 @@ export const ConversationThread = ({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-3 border-b border-black p-4">
+      <div className="flex items-center gap-3 border-b border-black p-3">
         <img
           src={conversation.image_url}
           alt={conversation.item_name}
-          className="h-16 w-12 object-cover"
+          className="aspect-11/15 w-11 shrink-0 object-cover"
         />
         <div className="min-w-0 flex-1">
-          <Link
-            to={itemPath}
-            className="block truncate font-semibold hover:underline"
-          >
+          <Link to={itemPath} className="block truncate hover:underline">
             {conversation.item_name}
           </Link>
-          <p className="truncate text-xs text-gray-600">
+          <p className="truncate text-xs">
             {conversation.seller_id === auth.userId ? "Buyer" : "Seller"}:{" "}
             {conversation.other_user_name}
             {conversation.price !== null && ` | $${conversation.price}`}
           </p>
         </div>
+        <Link to="/messages" className="shrink-0 text-sm underline md:hidden">
+          Back
+        </Link>
       </div>
 
       <div
@@ -173,7 +174,7 @@ export const ConversationThread = ({
                 } ${showTime ? "mb-2" : ""}`}
               >
                 <p
-                  className={`whitespace-pre-wrap wrap-break-word rounded border border-black px-3 py-2 text-sm ${
+                  className={`whitespace-pre-wrap wrap-break-word border border-black px-3 py-2 text-sm ${
                     isOwn ? "bg-black text-white" : "bg-white"
                   }`}
                 >
@@ -193,11 +194,13 @@ export const ConversationThread = ({
           event.preventDefault();
           void handleSend();
         }}
-        className="px-4 py-2"
+        className="border-t border-black p-3"
       >
         {sendError && <p className="mb-2 text-xs text-red-600">{sendError}</p>}
-        <div className="flex items-end gap-3">
-          <textarea
+        <div className="flex gap-2">
+          <TextAreaField
+            label="Write a message"
+            className="min-w-0 flex-1"
             value={draft}
             onChange={(event) => {
               setDraft(event.target.value);
@@ -211,14 +214,11 @@ export const ConversationThread = ({
             }}
             rows={2}
             maxLength={2000}
-            placeholder="Write a message..."
-            aria-label="Message"
-            className="flex-1 resize-none rounded p-3 text-sm outline-1 outline-gray-400 focus:outline-black"
           />
           <button
             type="submit"
             disabled={!draft.trim() || isSending}
-            className="cursor-pointer border border-black px-4 py-2 text-sm hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-black"
+            className="shrink-0 cursor-pointer border border-black bg-black px-6 text-sm text-white transition-colors hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:border-gray-500 disabled:bg-gray-100 disabled:text-gray-500"
           >
             {isSending ? "Sending..." : "Send"}
           </button>

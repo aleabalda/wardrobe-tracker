@@ -15,7 +15,7 @@ import { Profile } from "./pages/Profile/Profile";
 import { MyFavourites } from "./pages/Profile/MyFavourites";
 import { MyOutfits } from "./pages/Profile/MyOutfits";
 import { MyTransactions } from "./pages/Profile/MyTransactions";
-import { MyMessages } from "./pages/Profile/MyMessages";
+import { Messages } from "./pages/Messages/Messages";
 import { NotFound } from "./pages/NotFound/NotFound";
 import { Outfits } from "./pages/Outfits/Outfits";
 import { CreateOutfit } from "./pages/Outfits/CreateOutfit";
@@ -39,12 +39,12 @@ function App() {
                   <Route path="favourites" element={<MyFavourites />} />
                   <Route path="outfits" element={<MyOutfits />} />
                   <Route path="transactions" element={<MyTransactions />} />
-                  <Route path="messages" element={<MyMessages />} />
-                  <Route
-                    path="messages/:conversationId"
-                    element={<MyMessages />}
-                  />
                 </Route>
+                <Route path="/messages" element={<Messages />} />
+                <Route
+                  path="/messages/:conversationId"
+                  element={<Messages />}
+                />
                 <Route path="/outfits" element={<Outfits />} />
                 <Route
                   path="/outfits/create-outfit"

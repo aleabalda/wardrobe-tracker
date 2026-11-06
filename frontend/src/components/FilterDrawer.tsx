@@ -16,6 +16,7 @@ import {
 } from "../utils/itemFilters";
 
 const DrawerContent = ({
+  initialSection,
   onClose,
   items,
   fields,
@@ -24,6 +25,7 @@ const DrawerContent = ({
   resultCount,
   resultNoun,
 }: {
+  initialSection: FilterKey | null;
   onClose: () => void;
   items: FilterableItem[];
   fields: readonly FilterField[];
@@ -32,7 +34,12 @@ const DrawerContent = ({
   resultCount: number;
   resultNoun: string;
 }) => {
-  const [collapsed, setCollapsed] = useState<FilterKey[]>([]);
+  // this content mounts each time the drawer opens, so this resets on every open
+  const [collapsed, setCollapsed] = useState<FilterKey[]>(() =>
+    initialSection === null
+      ? []
+      : fields.map(({ key }) => key).filter((key) => key !== initialSection),
+  );
 
   const activeFilterCount = countActiveFilters(filters);
 
@@ -180,6 +187,7 @@ const DrawerContent = ({
 /** Panel that slides in from the right with every filter in one place. */
 export const FilterDrawer = ({
   isOpen,
+  initialSection,
   onClose,
   items,
   fields,
@@ -189,6 +197,8 @@ export const FilterDrawer = ({
   resultNoun,
 }: {
   isOpen: boolean;
+  /** The only section expanded on opening; null expands all of them */
+  initialSection: FilterKey | null;
   onClose: () => void;
   items: FilterableItem[];
   fields: readonly FilterField[];
@@ -225,6 +235,7 @@ export const FilterDrawer = ({
             className="fixed inset-y-0 right-0 z-40 flex w-122 max-w-full flex-col bg-white shadow-xl outline-none"
           >
             <DrawerContent
+              initialSection={initialSection}
               onClose={onClose}
               items={items}
               fields={fields}

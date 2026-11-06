@@ -48,7 +48,7 @@ export const ListingItemExpanded = () => {
       setError(null);
 
       const conversation = await startConversation(item.id);
-      navigate(`/profile/messages/${conversation.id}`);
+      navigate(`/messages/${conversation.id}`);
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "Unable to message seller.",

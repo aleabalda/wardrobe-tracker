@@ -1,7 +1,4 @@
-import {
-  CLOTHING_TYPES,
-  type ClothingType,
-} from "../types/clothingItemTypes";
+import { CLOTHING_TYPES, type ClothingType } from "../types/clothingItemTypes";
 
 const ALL_CLOTHING: ClothingType = "All Clothing";
 
@@ -20,12 +17,14 @@ export const ClothingTypeSelector = ({
   return (
     <div className="mb-8">
       <div className="mb-8 text-sm">
-        <p>{isAll ? ALL_CLOTHING : `${ALL_CLOTHING} — ${activeType}`}</p>
-        <p>
+        <p className="text-xs">
+          {isAll ? ALL_CLOTHING : `${ALL_CLOTHING} — ${activeType}`}
+        </p>
+        <p className="text-xs">
           {isAll ? "Clothing" : activeType} <sup>{count}</sup>
         </p>
       </div>
-      <h2 className="text-4xl mb-8">{activeType}</h2>
+      <h2 className="text-5xl mb-8">{activeType}</h2>
       <div className="flex gap-2 overflow-x-auto w-full">
         {CLOTHING_TYPES.map(({ type, image }) => (
           <button
