@@ -6,6 +6,7 @@ import type { ListingItem } from "../../types/ListingItem";
 import { fetchListingById } from "../../api/listings";
 import { startConversation } from "../../api/conversations";
 import { useAuth } from "../../context/AuthContext";
+import { getListingStatusBadge } from "../../utils/listingStatus";
 
 // read-only view of another user's listing, so no edit/delete/outfit actions
 export const ListingItemExpanded = () => {
@@ -65,6 +66,8 @@ export const ListingItemExpanded = () => {
     return <p className="p-4">Loading item...</p>;
   }
 
+  const statusBadge = getListingStatusBadge(item.status);
+
   return (
     <div className="flex h-page gap-3 p-4">
       <BlurredImage
@@ -86,6 +89,8 @@ export const ListingItemExpanded = () => {
         <p className="">{item.description}</p>
 
         {item.price !== null && <p>${item.price}</p>}
+
+        {statusBadge && <p className="text-sm">{statusBadge}</p>}
 
         {error && <p className="text-red-600">{error}</p>}
 

@@ -126,7 +126,7 @@ export const Outfits = () => {
   return (
     <div className="p-12 pt-6">
       <Toast message={toastMessage} onClose={closeToast} />
-      <h1 className="mb-4 text-4xl">Outfits</h1>
+      <h2 className="mb-4 text-5xl">Outfits</h2>
       <ItemToolbar
         items={outfits.flatMap((outfit) => outfit.items)}
         fields={OUTFIT_FILTER_FIELDS}
@@ -143,7 +143,7 @@ export const Outfits = () => {
             onClick={() => {
               navigate("/outfits/create-outfit");
             }}
-            className="cursor-pointer border border-black bg-black px-3 py-1.5 text-sm text-white transition-colors hover:bg-white hover:text-black"
+            className="cursor-pointer border border-black bg-black px-2 py-1 text-xs text-white transition-colors hover:bg-white hover:text-black"
           >
             Create Outfit
           </button>

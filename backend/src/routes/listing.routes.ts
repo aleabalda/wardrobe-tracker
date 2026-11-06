@@ -5,6 +5,8 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 
 const router = Router();
 
+const LISTING_STATUSES = ["active", "cancelled", "sold", "pending"];
+
 router.post("/create", verifyToken, async (req, res) => {
   const connection = await pool.getConnection();
 
@@ -146,6 +148,44 @@ router.get("/:id", verifyToken, async (req, res) => {
 
     return res.status(500).json({
       message: "Failed to fetch listing.",
+    });
+  }
+});
+
+// only the seller can change a listing's status
+router.put("/:id/status", verifyToken, async (req, res) => {
+  const userId = req.user!.id;
+  const listingId = Number(req.params.id);
+  const { status } = req.body;
+
+  if (!Number.isInteger(listingId) || listingId <= 0) {
+    return res.status(400).json({ message: "Invalid listing id." });
+  }
+
+  if (!LISTING_STATUSES.includes(status)) {
+    return res.status(400).json({ message: "Invalid listing status." });
+  }
+
+  try {
+    const [result] = await pool.query<ResultSetHeader>(
+      `
+      UPDATE listings
+      SET status = ?
+      WHERE id = ? AND seller_id = ?
+      `,
+      [status, listingId, userId],
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Listing not found." });
+    }
+
+    return res.status(200).json({ status });
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      message: "Failed to update listing status.",
     });
   }
 });

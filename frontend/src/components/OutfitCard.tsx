@@ -50,7 +50,7 @@ export const OutfitCard = ({
         <Link
           to={`/outfits/${outfit.id}`}
           aria-label={`View ${outfit.name ?? "outfit"}`}
-          className={`relative grid aspect-11/15 gap-px overflow-hidden bg-gray-200 shadow-lg transition-shadow ease-in-out duration-150 hover:shadow-xl ${
+          className={`relative grid aspect-11/15 gap-px overflow-hidden bg-gray-200 ${
             previewItems.length > 1 ? "grid-cols-2" : "grid-cols-1"
           } ${previewItems.length > 2 ? "grid-rows-2" : "grid-rows-1"}`}
         >

@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
 import { FilterDrawer } from "./FilterDrawer";
+import { SortMenu } from "./SortMenu";
 import {
   EMPTY_FILTERS,
   FILTER_FIELDS,
@@ -11,12 +12,9 @@ import {
 } from "../utils/itemFilters";
 
 const filterButtonClass = (isHighlighted: boolean) =>
-  `cursor-pointer border border-black px-3 py-1.5 text-sm transition-colors hover:bg-black hover:text-white ${
+  `cursor-pointer border border-black px-2 py-1 text-xs transition-colors hover:bg-black hover:text-white ${
     isHighlighted ? "bg-black text-white" : ""
   }`;
-
-const panelClass =
-  "absolute top-full z-20 mt-2 border border-black bg-white shadow-lg";
 
 export function ItemToolbar<SortValue extends string>({
   items,
@@ -46,18 +44,17 @@ export function ItemToolbar<SortValue extends string>({
   /** Page action shown before the filters, e.g. an add button */
   action?: ReactNode;
 }) {
-  const [isSortOpen, setIsSortOpen] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   // the only section expanded when the drawer opens; null expands all of them
   const [drawerSection, setDrawerSection] = useState<FilterKey | null>(null);
   const drawerTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const activeFilterCount = countActiveFilters(filters);
-  const activeSortLabel = sortOptions.find(
-    ({ value }) => value === sortValue,
-  )?.label;
 
-  const openDrawer = (section: FilterKey | null, trigger: HTMLButtonElement) => {
+  const openDrawer = (
+    section: FilterKey | null,
+    trigger: HTMLButtonElement,
+  ) => {
     drawerTriggerRef.current = trigger;
     setDrawerSection(section);
     setIsDrawerOpen(true);
@@ -72,21 +69,9 @@ export function ItemToolbar<SortValue extends string>({
     <div
       className="relative mb-2 flex flex-wrap items-center justify-between gap-3"
       onKeyDown={(e) => {
-        if (e.key !== "Escape") return;
-        setIsSortOpen(false);
-        if (isDrawerOpen) closeDrawer();
+        if (e.key === "Escape" && isDrawerOpen) closeDrawer();
       }}
     >
-      {isSortOpen && (
-        // invisible backdrop so clicking anywhere else closes the menu
-        <div
-          className="fixed inset-0 z-10"
-          onClick={() => {
-            setIsSortOpen(false);
-          }}
-        ></div>
-      )}
-
       <div className="flex flex-wrap items-center gap-2">
         {action}
         {fields.map(({ key, label }) => {
@@ -132,43 +117,12 @@ export function ItemToolbar<SortValue extends string>({
         )}
       </div>
 
-      <div className="relative text-sm">
-        <button
-          type="button"
-          aria-expanded={isSortOpen}
-          onClick={() => {
-            setIsSortOpen(!isSortOpen);
-          }}
-          className="cursor-pointer"
-        >
-          Sort by: <span className="underline">{activeSortLabel}</span>{" "}
-          {isSortOpen ? "▴" : "▾"}
-        </button>
-        {isSortOpen && (
-          <ul
-            aria-label="Sort items"
-            className={`${panelClass} right-0 w-48 py-1`}
-          >
-            {sortOptions.map(({ value, label }) => (
-              <li key={value}>
-                <button
-                  type="button"
-                  aria-pressed={sortValue === value}
-                  onClick={() => {
-                    onSortChange(value);
-                    setIsSortOpen(false);
-                  }}
-                  className={`w-full cursor-pointer px-3 py-1.5 text-left hover:underline ${
-                    sortValue === value ? "underline" : ""
-                  }`}
-                >
-                  {label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <SortMenu
+        options={sortOptions}
+        value={sortValue}
+        onChange={onSortChange}
+        panelClassName="right-0 border border-black"
+      />
 
       <FilterDrawer
         isOpen={isDrawerOpen}

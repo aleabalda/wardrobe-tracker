@@ -2,9 +2,15 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CreateListingForm } from "../../components/CreateListingForm";
 import { BlurredImage } from "../../components/ui/BlurredImage";
+import { SelectField } from "../../components/ui/FormField";
 
 import type { ClothingItem } from "../../types/ClothingItems";
 import { deleteClothingItem, fetchClothingItemById } from "../../api/wardrobe";
+import { updateListingStatus } from "../../api/listings";
+import {
+  LISTING_STATUSES,
+  type ListingStatus,
+} from "../../utils/listingStatus";
 
 export const ClothingItemExpanded = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,6 +20,7 @@ export const ClothingItemExpanded = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isListingItem, setIsListingItem] = useState<boolean>(false);
+  const [isSavingStatus, setIsSavingStatus] = useState<boolean>(false);
 
   useEffect(() => {
     if (!id) {
@@ -63,6 +70,26 @@ export const ClothingItemExpanded = () => {
     }
   };
 
+  const handleStatusChange = async (status: ListingStatus) => {
+    if (!item?.listing_id || isSavingStatus) return;
+
+    try {
+      setIsSavingStatus(true);
+      setError(null);
+
+      await updateListingStatus(item.listing_id, status);
+      setItem({ ...item, listing_status: status });
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unable to update listing status.",
+      );
+    } finally {
+      setIsSavingStatus(false);
+    }
+  };
+
   if (error && !item) {
     return <p className="p-4">{error}</p>;
   }
@@ -82,8 +109,14 @@ export const ClothingItemExpanded = () => {
           clothingItem={item}
           toggleForm={toggleForm}
           editError={editError}
-          onListingCreated={(description) => {
-            setItem({ ...item, description, is_for_sale: true });
+          onListingCreated={(description, listingId) => {
+            setItem({
+              ...item,
+              description,
+              is_for_sale: true,
+              listing_id: listingId,
+              listing_status: "active",
+            });
           }}
         />
       )}
@@ -107,10 +140,28 @@ export const ClothingItemExpanded = () => {
 
         {item.price !== null && <p>${item.price}</p>}
 
+        {item.listing_id && item.listing_status && (
+          <SelectField
+            label="Listing status"
+            className="mt-2 max-w-xs"
+            value={item.listing_status}
+            disabled={isSavingStatus}
+            onChange={(event) => {
+              void handleStatusChange(event.target.value as ListingStatus);
+            }}
+          >
+            {LISTING_STATUSES.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </SelectField>
+        )}
+
         {error && <p className="text-red-600">{error}</p>}
 
         <div className="absolute bottom-0 left-0 flex gap-4">
-          {item.is_for_sale ? (
+          {item.listing_id ? null : item.is_for_sale ? (
             <p className="text-sm">Item is Listed For Sale</p>
           ) : (
             <button

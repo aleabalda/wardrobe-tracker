@@ -62,8 +62,7 @@ export const Wardrobe = () => {
 
   const typeItems = clothingItems.filter(
     (item) =>
-      activeClothingType === "All Clothing" ||
-      item.type === activeClothingType,
+      activeClothingType === "All Clothing" || item.type === activeClothingType,
   );
 
   const filteredItems = typeItems
@@ -92,7 +91,7 @@ export const Wardrobe = () => {
             onClick={() => {
               setAddingItem(true);
             }}
-            className="cursor-pointer border border-black bg-black px-3 py-1.5 text-sm text-white transition-colors hover:bg-white hover:text-black"
+            className="cursor-pointer border border-black bg-black px-2 py-1 text-xs text-white transition-colors hover:bg-white hover:text-black"
           >
             Add Item
           </button>

@@ -19,7 +19,10 @@ const CONVERSATION_SUMMARY_SQL = `
     c.updated_at,
     l.clothing_item_id,
     l.price,
+    l.status AS listing_status,
     ci.name AS item_name,
+    ci.brand,
+    ci.size,
     ci.image_url,
     other.id AS other_user_id,
     COALESCE(other.username, other.first_name, 'User') AS other_user_name,
@@ -98,7 +101,8 @@ router.post("/start", verifyToken, async (req, res) => {
       return res.status(200).json({ id: existingRows[0].id });
     }
 
-    if (status !== "active") {
+    // pending listings are still in the shop, so buyers can ask about them
+    if (status !== "active" && status !== "pending") {
       return res.status(400).json({
         message: "This listing is no longer available.",
       });

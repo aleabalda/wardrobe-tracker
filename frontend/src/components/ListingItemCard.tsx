@@ -1,9 +1,11 @@
 import type { ListingItem } from "../types/ListingItem";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getListingStatusBadge } from "../utils/listingStatus";
 
 export const ListingItemCard = ({ item }: { item: ListingItem }) => {
   const { auth } = useAuth();
+  const statusBadge = getListingStatusBadge(item.status);
   // sellers manage their own item; everyone else gets the read-only listing
   const detailsPath =
     item.seller_id === auth.userId
@@ -32,6 +34,7 @@ export const ListingItemCard = ({ item }: { item: ListingItem }) => {
           {[item.brand, `Size ${item.size}`].filter(Boolean).join(" | ")}
         </p>
         {item.color && <p className="mt-1 text-gray-600">{item.color}</p>}
+        {statusBadge && <p className="mt-1">{statusBadge}</p>}
       </div>
     </div>
   );

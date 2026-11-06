@@ -1,4 +1,5 @@
 import type { ListingItem } from "../types/ListingItem";
+import type { ListingStatus } from "../utils/listingStatus";
 
 const API_BASE_URL = "http://localhost:3000/api/listing";
 
@@ -6,8 +7,8 @@ export const createListing = async (
   clothingItemId: number,
   price: number,
   description?: string,
-  status: "active" | "sold" | "cancelled" = "active",
-) => {
+  status: ListingStatus = "active",
+): Promise<{ id: number }> => {
   const res = await fetch(`${API_BASE_URL}/create`, {
     method: "POST",
     credentials: "include",
@@ -42,6 +43,24 @@ export const fetchAllListings = async (): Promise<ListingItem[]> => {
   }
 
   return res.json() as Promise<ListingItem[]>;
+};
+
+export const updateListingStatus = async (
+  id: number,
+  status: ListingStatus,
+): Promise<void> => {
+  const res = await fetch(`${API_BASE_URL}/${id}/status`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ status }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to update listing status");
+  }
 };
 
 export const fetchListingById = async (id: string): Promise<ListingItem> => {

@@ -59,11 +59,13 @@ export const Listings = () => {
     void fetchListings();
   }, []);
 
-  // shopping shows other users' listings, selling shows the user's own
+  // shopping shows other users' listings that can still be bought, selling
+  // shows all of the user's own
   const typeListings = listings.filter(
     (item) =>
       (isShopping
-        ? item.seller_id !== auth.userId
+        ? item.seller_id !== auth.userId &&
+          (item.status === "active" || item.status === "pending")
         : item.seller_id === auth.userId) &&
       (activeClothingType === "All Clothing" ||
         item.type === activeClothingType),
@@ -110,7 +112,7 @@ export const Listings = () => {
           !isShopping && (
             <button
               type="button"
-              className="cursor-pointer border border-black bg-black px-3 py-1.5 text-sm text-white transition-colors hover:bg-white hover:text-black"
+              className="cursor-pointer border border-black bg-black px-2 py-1 text-xs text-white transition-colors hover:bg-white hover:text-black"
             >
               Create Listing
             </button>

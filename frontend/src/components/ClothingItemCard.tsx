@@ -40,7 +40,7 @@ export const ClothingItemCard = ({ item }: { item: ClothingItem }) => {
         <img
           src={item.image_url}
           alt={item.name}
-          className="block w-full aspect-11/15 object-cover transition-transform ease-in-out duration-300 group-hover:scale-105 group-focus-visible:scale-105"
+          className="block w-full aspect-11/15 object-cover"
         />
       </Link>
       <div className="px-2 pt-3 text-sm">

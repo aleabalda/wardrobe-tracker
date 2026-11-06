@@ -153,9 +153,17 @@ router.get("/:id", verifyToken, async (req, res) => {
 
   const [rows] = await pool.execute(
     `
-    SELECT *
-    FROM clothing_items
-    WHERE id = ? AND user_id = ?
+    SELECT
+      ci.*,
+      l.id AS listing_id,
+      l.status AS listing_status
+    FROM clothing_items ci
+    LEFT JOIN listings l ON l.id = (
+      SELECT MAX(latest.id)
+      FROM listings latest
+      WHERE latest.clothing_item_id = ci.id
+    )
+    WHERE ci.id = ? AND ci.user_id = ?
     `,
     [itemId, userId],
   );

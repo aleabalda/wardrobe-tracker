@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import {
   fetchConversation,
   markConversationRead,
@@ -125,11 +126,11 @@ export const ConversationThread = ({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-3 border-b border-black p-3">
+      <div className="flex items-center gap-3 pb-4">
         <img
           src={conversation.image_url}
           alt={conversation.item_name}
-          className="aspect-11/15 w-11 shrink-0 object-cover"
+          className="aspect-11/15 w-11 shrink-0 bg-[#ececec] object-contain"
         />
         <div className="min-w-0 flex-1">
           <Link to={itemPath} className="block truncate hover:underline">
@@ -148,7 +149,7 @@ export const ConversationThread = ({
 
       <div
         ref={messagesRef}
-        className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-4"
+        className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto py-4"
       >
         {conversation.messages.length === 0 ? (
           <p className="text-sm text-gray-500">
@@ -174,8 +175,8 @@ export const ConversationThread = ({
                 } ${showTime ? "mb-2" : ""}`}
               >
                 <p
-                  className={`whitespace-pre-wrap wrap-break-word border border-black px-3 py-2 text-sm ${
-                    isOwn ? "bg-black text-white" : "bg-white"
+                  className={`whitespace-pre-wrap wrap-break-word px-3 py-2 text-sm ${
+                    isOwn ? "bg-black text-white" : "bg-gray-100"
                   }`}
                 >
                   {message.body}
@@ -194,13 +195,13 @@ export const ConversationThread = ({
           event.preventDefault();
           void handleSend();
         }}
-        className="border-t border-black p-3"
+        className="pt-4"
       >
         {sendError && <p className="mb-2 text-xs text-red-600">{sendError}</p>}
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3">
           <TextAreaField
             label="Write a message"
-            className="min-w-0 flex-1"
+            className="min-w-0 flex-1 border-0! bg-gray-100! focus-within:ring-0!"
             value={draft}
             onChange={(event) => {
               setDraft(event.target.value);
@@ -218,9 +219,10 @@ export const ConversationThread = ({
           <button
             type="submit"
             disabled={!draft.trim() || isSending}
-            className="shrink-0 cursor-pointer border border-black bg-black px-6 text-sm text-white transition-colors hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:border-gray-500 disabled:bg-gray-100 disabled:text-gray-500"
+            aria-label={isSending ? "Sending message" : "Send message"}
+            className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
           >
-            {isSending ? "Sending..." : "Send"}
+            <ArrowUpwardIcon fontSize="small" />
           </button>
         </div>
       </form>

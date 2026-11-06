@@ -12,7 +12,7 @@ export const CreateListingForm = ({
   toggleForm: () => void;
   clothingItem: ClothingItem;
   editError: (error: string) => void;
-  onListingCreated: (description: string) => void;
+  onListingCreated: (description: string, listingId: number) => void;
 }) => {
   const [price, setPrice] = useState<string>("");
   const [description, setDescription] = useState<string>(
@@ -23,8 +23,12 @@ export const CreateListingForm = ({
     e.preventDefault();
 
     try {
-      await createListing(clothingItem.id, Number(price), description);
-      onListingCreated(description.trim());
+      const { id } = await createListing(
+        clothingItem.id,
+        Number(price),
+        description,
+      );
+      onListingCreated(description.trim(), id);
       toggleForm();
     } catch (error) {
       editError(

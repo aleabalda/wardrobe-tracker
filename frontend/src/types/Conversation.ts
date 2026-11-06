@@ -1,3 +1,5 @@
+import type { ListingStatus } from "../utils/listingStatus";
+
 export type Message = {
   id: number;
   conversation_id: number;
@@ -15,7 +17,10 @@ export type Conversation = {
   updated_at: string;
   clothing_item_id: number;
   price: number | null;
+  listing_status: ListingStatus;
   item_name: string;
+  brand: string | null;
+  size: string | null;
   image_url: string;
   other_user_id: number;
   other_user_name: string;
