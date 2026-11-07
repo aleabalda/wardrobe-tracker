@@ -5,9 +5,15 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 
 const router = Router();
 
+const OUTFIT_SEASONS = ["Fall", "Spring", "Summer", "Winter"];
+
+// the SET column comes back as "Fall,Spring", or NULL when none were chosen
+const parseSeason = (season: string | null) =>
+  season ? season.split(",") : [];
+
 router.post("/create", verifyToken, async (req, res) => {
   const userId = req.user!.id;
-  const { name, description, clothingItemIds } = req.body;
+  const { name, description, clothingItemIds, season } = req.body;
 
   if (
     !Array.isArray(clothingItemIds) ||
@@ -31,6 +37,14 @@ router.post("/create", verifyToken, async (req, res) => {
 
   if (description !== undefined && typeof description !== "string") {
     return res.status(400).json({ message: "Invalid outfit description." });
+  }
+
+  if (
+    season !== undefined &&
+    (!Array.isArray(season) ||
+      !season.every((value) => OUTFIT_SEASONS.includes(value)))
+  ) {
+    return res.status(400).json({ message: "Invalid outfit season." });
   }
 
   // ignore duplicate ids so the composite primary key isn't violated
@@ -61,10 +75,15 @@ router.post("/create", verifyToken, async (req, res) => {
     const [result] = await connection.query<ResultSetHeader>(
       `
       INSERT INTO outfits
-        (user_id, name, description)
-      VALUES (?, ?, ?)
+        (user_id, name, description, season)
+      VALUES (?, ?, ?, ?)
       `,
-      [userId, name?.trim() || null, description?.trim() || null],
+      [
+        userId,
+        name?.trim() || null,
+        description?.trim() || null,
+        season?.length ? [...new Set(season)].join(",") : null,
+      ],
     );
 
     const outfitId = result.insertId;
@@ -123,7 +142,7 @@ router.get("/get", verifyToken, async (req, res) => {
   try {
     const [outfitRows] = await pool.query<RowDataPacket[]>(
       `
-      SELECT id, name, description, is_favourite, created_at
+      SELECT id, name, description, season, is_favourite, created_at
       FROM outfits
       WHERE user_id = ?${favouritesOnly ? " AND is_favourite = 1" : ""}
       ORDER BY created_at DESC
@@ -148,6 +167,7 @@ router.get("/get", verifyToken, async (req, res) => {
     // group each outfit's clothing items under it
     const outfits = outfitRows.map((outfit) => ({
       ...outfit,
+      season: parseSeason(outfit.season),
       items: itemRows
         .filter((item) => item.outfit_id === outfit.id)
         .map(({ outfit_id, image_public_id, ...item }) => item),
@@ -174,7 +194,7 @@ router.get("/:id", verifyToken, async (req, res) => {
   try {
     const [outfitRows] = await pool.query<RowDataPacket[]>(
       `
-      SELECT id, name, description, is_favourite, created_at
+      SELECT id, name, description, season, is_favourite, created_at
       FROM outfits
       WHERE id = ? AND user_id = ?
       `,
@@ -197,6 +217,7 @@ router.get("/:id", verifyToken, async (req, res) => {
 
     return res.status(200).json({
       ...outfitRows[0],
+      season: parseSeason(outfitRows[0].season),
       items: itemRows.map(({ image_public_id, ...item }) => item),
     });
   } catch (err) {

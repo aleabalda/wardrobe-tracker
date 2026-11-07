@@ -211,6 +211,15 @@ export const OutfitExpanded = () => {
             <dt className="text-gray-500">Categories</dt>
             <dd>{categories.map(({ category }) => category).join(", ")}</dd>
 
+            {outfit.season.length > 0 && (
+              <>
+                <dt className="text-gray-500">
+                  {outfit.season.length === 1 ? "Season" : "Seasons"}
+                </dt>
+                <dd>{outfit.season.join(", ")}</dd>
+              </>
+            )}
+
             {brands.length > 0 && (
               <>
                 <dt className="text-gray-500">Brands</dt>

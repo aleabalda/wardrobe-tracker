@@ -1,4 +1,4 @@
-import type { Outfit } from "../types/Outfit";
+import type { Outfit, OutfitSeason } from "../types/Outfit";
 
 const API_BASE_URL = "http://localhost:3000/api/outfit";
 
@@ -6,6 +6,7 @@ export const createOutfit = async (
   clothingItemIds: number[],
   name?: string,
   description?: string,
+  season?: OutfitSeason[],
 ): Promise<{ id: number; message: string }> => {
   const res = await fetch(`${API_BASE_URL}/create`, {
     method: "POST",
@@ -17,6 +18,7 @@ export const createOutfit = async (
       clothingItemIds,
       name,
       description,
+      season,
     }),
   });
 

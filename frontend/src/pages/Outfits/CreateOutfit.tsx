@@ -4,6 +4,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { fetchClothingItems } from "../../api/wardrobe";
 import { createOutfit } from "../../api/outfits";
 import type { ClothingItem } from "../../types/ClothingItems";
+import { OUTFIT_SEASONS, type OutfitSeason } from "../../types/Outfit";
 import {
   CLOTHING_TYPES,
   type ClothingType,
@@ -30,6 +31,7 @@ export const CreateOutfit = () => {
   const [selectedIds, setSelectedIds] = useState<number[]>(
     initialItemId !== undefined ? [initialItemId] : [],
   );
+  const [selectedSeasons, setSelectedSeasons] = useState<OutfitSeason[]>([]);
   const [activeStep, setActiveStep] = useState<number>(0);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -81,6 +83,14 @@ export const CreateOutfit = () => {
     ]);
   };
 
+  const toggleSeason = (season: OutfitSeason) => {
+    setSelectedSeasons(
+      selectedSeasons.includes(season)
+        ? selectedSeasons.filter((val) => val !== season)
+        : [...selectedSeasons, season],
+    );
+  };
+
   const selectedItems = clothingItems.filter((item) =>
     selectedIds.includes(item.id),
   );
@@ -89,7 +99,12 @@ export const CreateOutfit = () => {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      const result = await createOutfit(selectedIds);
+      const result = await createOutfit(
+        selectedIds,
+        undefined,
+        undefined,
+        selectedSeasons,
+      );
       console.log(result);
       navigate("/outfits");
     } catch (error) {
@@ -294,6 +309,33 @@ export const CreateOutfit = () => {
             })}
           </div>
         )}
+        <div className="mt-6">
+          <div className="mb-2 flex items-baseline gap-3">
+            <h3 className="text-sm">Season</h3>
+            <p className="text-xs text-gray-500">Choose any</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {OUTFIT_SEASONS.map((season) => {
+              const isSelected = selectedSeasons.includes(season);
+
+              return (
+                <button
+                  key={season}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => {
+                    toggleSeason(season);
+                  }}
+                  className={`cursor-pointer border border-black px-2 py-1 text-xs transition-colors hover:bg-black hover:text-white ${
+                    isSelected ? "bg-black text-white" : ""
+                  }`}
+                >
+                  {season}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <button
           type="button"
           disabled={selectedIds.length === 0 || isSubmitting}
