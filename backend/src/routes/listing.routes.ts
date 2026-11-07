@@ -96,9 +96,28 @@ router.get("/get", verifyToken, async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
+    // optional ?saved=true to only return listings this user has saved
+    const savedOnly = req.query.saved === "true";
+
     console.log("about to fetch listings");
     const [rows] = await pool.execute(
-      "SELECT listings.*, clothing_items.name, clothing_items.description, clothing_items.brand, clothing_items.type, clothing_items.color, clothing_items.size, clothing_items.image_url FROM listings JOIN clothing_items ON listings.clothing_item_id = clothing_items.id;",
+      `
+      SELECT
+        listings.*,
+        clothing_items.name,
+        clothing_items.description,
+        clothing_items.brand,
+        clothing_items.type,
+        clothing_items.color,
+        clothing_items.size,
+        clothing_items.image_url,
+        saved.listing_id IS NOT NULL AS is_saved
+      FROM listings
+      JOIN clothing_items ON listings.clothing_item_id = clothing_items.id
+      LEFT JOIN saved_listings saved
+        ON saved.listing_id = listings.id AND saved.user_id = ?
+      ${savedOnly ? "WHERE saved.listing_id IS NOT NULL" : ""}
+      `,
       [userId],
     );
     console.log("fetched listings");
@@ -111,8 +130,75 @@ router.get("/get", verifyToken, async (req, res) => {
   }
 });
 
+// saves a listing for this user or removes it from their saved listings
+router.put("/saved/:id", verifyToken, async (req, res) => {
+  const userId = req.user!.id;
+  const listingId = Number(req.params.id);
+  const { is_saved: isSaved } = req.body;
+
+  if (!Number.isInteger(listingId) || listingId <= 0) {
+    return res.status(400).json({ message: "Invalid listing id." });
+  }
+
+  if (typeof isSaved !== "boolean") {
+    return res.status(400).json({ message: "is_saved must be a boolean." });
+  }
+
+  try {
+    if (!isSaved) {
+      await pool.query(
+        `
+        DELETE FROM saved_listings
+        WHERE user_id = ? AND listing_id = ?
+        `,
+        [userId, listingId],
+      );
+
+      return res.status(200).json({ is_saved: false });
+    }
+
+    const [listingRows] = await pool.query<RowDataPacket[]>(
+      `
+      SELECT seller_id
+      FROM listings
+      WHERE id = ?
+      `,
+      [listingId],
+    );
+
+    if (listingRows.length === 0) {
+      return res.status(404).json({ message: "Listing not found." });
+    }
+
+    if (listingRows[0].seller_id === userId) {
+      return res.status(400).json({
+        message: "You can't save your own listing.",
+      });
+    }
+
+    // saving twice (e.g. from two tabs) keeps the original row
+    await pool.query(
+      `
+      INSERT IGNORE INTO saved_listings
+        (user_id, listing_id)
+      VALUES (?, ?)
+      `,
+      [userId, listingId],
+    );
+
+    return res.status(200).json({ is_saved: true });
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      message: "Failed to update saved listing.",
+    });
+  }
+});
+
 // any logged in user can view a listing, not just the seller
 router.get("/:id", verifyToken, async (req, res) => {
+  const userId = req.user!.id;
   const listingId = Number(req.params.id);
 
   if (!Number.isInteger(listingId) || listingId <= 0) {
@@ -130,12 +216,15 @@ router.get("/:id", verifyToken, async (req, res) => {
         clothing_items.type,
         clothing_items.color,
         clothing_items.size,
-        clothing_items.image_url
+        clothing_items.image_url,
+        saved.listing_id IS NOT NULL AS is_saved
       FROM listings
       JOIN clothing_items ON listings.clothing_item_id = clothing_items.id
+      LEFT JOIN saved_listings saved
+        ON saved.listing_id = listings.id AND saved.user_id = ?
       WHERE listings.id = ?
       `,
-      [listingId],
+      [userId, listingId],
     );
 
     if (rows.length === 0) {

@@ -5,7 +5,7 @@ import { useUnreadCount } from "../hooks/useUnreadCount";
 import { Navbar } from "./Navbar";
 
 const titleLink = (
-  <h1 className="font-title text-6xl uppercase">
+  <h1 className="font-title text-6xl uppercase font-semibold">
     <Link to="/">Wardrobe Tracker</Link>
   </h1>
 );
@@ -91,7 +91,7 @@ export const Header = () => {
           )}
         </Link>
         <Link
-          to="/profile/favourites"
+          to="/profile/outfits"
           aria-current={isProfileActive ? "page" : undefined}
           className={isProfileActive ? "underline" : "hover:underline"}
         >

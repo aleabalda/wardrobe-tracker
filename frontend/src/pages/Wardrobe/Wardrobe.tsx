@@ -13,30 +13,11 @@ import {
   matchesFilters,
   type ItemFilters,
 } from "../../utils/itemFilters";
-
-const SORT_OPTIONS = [
-  { value: "newest", label: "Recently added" },
-  { value: "oldest", label: "Oldest" },
-  { value: "name-asc", label: "Name (A-Z)" },
-  { value: "name-desc", label: "Name (Z-A)" },
-] as const;
-
-type SortOption = (typeof SORT_OPTIONS)[number]["value"];
-
-// ids are auto-incremented, so they follow creation order. Items just added
-// through AddItemForm don't come back with created_at, so ids are used instead
-const compareItems = (a: ClothingItem, b: ClothingItem, sort: SortOption) => {
-  switch (sort) {
-    case "newest":
-      return b.id - a.id;
-    case "oldest":
-      return a.id - b.id;
-    case "name-asc":
-      return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
-    case "name-desc":
-      return b.name.localeCompare(a.name, undefined, { sensitivity: "base" });
-  }
-};
+import {
+  ITEM_SORT_OPTIONS,
+  compareItems,
+  type ItemSortOption,
+} from "../../utils/sortOptions";
 
 export const Wardrobe = () => {
   const [addingItem, setAddingItem] = useState<boolean>(false);
@@ -44,7 +25,7 @@ export const Wardrobe = () => {
   const [clothingItems, setClothingItems] = useState<ClothingItem[]>([]);
   const [activeClothingType, setActiveClothingType] =
     useState<ClothingType>("All Clothing");
-  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [sortOption, setSortOption] = useState<ItemSortOption>("newest");
   const [filters, setFilters] = useState<ItemFilters>(EMPTY_FILTERS);
 
   useEffect(() => {
@@ -81,7 +62,7 @@ export const Wardrobe = () => {
         filters={filters}
         onFiltersChange={setFilters}
         resultCount={filteredItems.length}
-        sortOptions={SORT_OPTIONS}
+        sortOptions={ITEM_SORT_OPTIONS}
         sortValue={sortOption}
         onSortChange={setSortOption}
         action={

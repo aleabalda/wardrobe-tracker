@@ -11,11 +11,6 @@ export const Profile = () => {
       <nav>
         <ul className="flex gap-4">
           <li>
-            <NavLink to="/profile/favourites" className={linkStyle}>
-              My Favourites
-            </NavLink>
-          </li>
-          <li>
             <NavLink to="/profile/outfits" className={linkStyle}>
               My Outfits
             </NavLink>

@@ -11,6 +11,8 @@ export type ListingItem = {
   price: number | null;
   image_url: string;
   status: ListingStatus;
+  // whether the logged in user has saved this listing
+  is_saved: boolean;
   created_at: string;
   clothing_item_id: number;
   seller_id: number;

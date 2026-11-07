@@ -4,6 +4,11 @@ export const FILTER_FIELDS = [
   { key: "brand", label: "Brand" },
 ] as const;
 
+// size isn't meaningful for a whole outfit
+export const OUTFIT_FILTER_FIELDS = FILTER_FIELDS.filter(
+  ({ key }) => key !== "size",
+);
+
 export type FilterField = (typeof FILTER_FIELDS)[number];
 export type FilterKey = FilterField["key"];
 export type ItemFilters = Record<FilterKey, string[]>;

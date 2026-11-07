@@ -12,15 +12,16 @@ from selenium.webdriver.support import expected_conditions as EC
         ("Wardrobe", "/wardrobe", "//main//h2[normalize-space()='All Clothing']"),
         ("Listings", "/listings", "//main//h2[normalize-space()='All Clothing']"),
         ("Outfits", "/outfits", "//main//h1[normalize-space()='Outfits']"),
-        ("Profile", "/profile/favourites", "//main//h2[normalize-space()='Favourites']"),
+        ("Favourites", "/favourites/items", "//main//h2[normalize-space()='Favourites']"),
+        ("Profile", "/profile/outfits", "//main//h2[normalize-space()='Outfits']"),
     ],
-    ids=["wardrobe", "listings", "outfits", "profile"],
+    ids=["wardrobe", "listings", "outfits", "favourites", "profile"],
 )
 def test_nav_link_loads_page(logged_in_driver, wait, link_text, expected_path, heading):
     """Purpose:
         Verifies that each link in the navigation bar opens the correct page.
-        The test runs once for each link: Wardrobe, Listings, Outfits and
-        Profile.
+        The test runs once for each link: Wardrobe, Listings, Outfits,
+        Favourites and Profile.
 
     Steps:
         1. Log in as the test user (lands on /wardrobe).
@@ -30,7 +31,8 @@ def test_nav_link_loads_page(logged_in_driver, wait, link_text, expected_path, h
         Wardrobe opens /wardrobe with the heading "All Clothing".
         Listings opens /listings with the heading "All Clothing".
         Outfits opens /outfits with the heading "Outfits".
-        Profile opens /profile/favourites with the heading "Favourites".
+        Favourites opens /favourites/items with the heading "Favourites".
+        Profile opens /profile/outfits with the heading "Outfits".
     """
     driver = logged_in_driver
 

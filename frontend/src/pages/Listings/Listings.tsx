@@ -12,36 +12,18 @@ import {
   matchesFilters,
   type ItemFilters,
 } from "../../utils/itemFilters";
-
-const SORT_OPTIONS = [
-  { value: "newest", label: "Recently listed" },
-  { value: "oldest", label: "Oldest" },
-  { value: "price-asc", label: "Price (low to high)" },
-  { value: "price-desc", label: "Price (high to low)" },
-] as const;
-
-type SortOption = (typeof SORT_OPTIONS)[number]["value"];
-
-// the API can send decimal prices as strings, and listings without a price go last
-const compareListings = (a: ListingItem, b: ListingItem, sort: SortOption) => {
-  switch (sort) {
-    case "newest":
-      return b.id - a.id;
-    case "oldest":
-      return a.id - b.id;
-    case "price-asc":
-      return Number(a.price ?? Infinity) - Number(b.price ?? Infinity);
-    case "price-desc":
-      return Number(b.price ?? -Infinity) - Number(a.price ?? -Infinity);
-  }
-};
+import {
+  LISTING_SORT_OPTIONS,
+  compareListings,
+  type ListingSortOption,
+} from "../../utils/sortOptions";
 
 export const Listings = () => {
   const [listings, setListings] = useState<ListingItem[]>([]);
   const [isShopping, setIsShopping] = useState<boolean>(true);
   const [activeClothingType, setActiveClothingType] =
     useState<ClothingType>("All Clothing");
-  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [sortOption, setSortOption] = useState<ListingSortOption>("newest");
   const [filters, setFilters] = useState<ItemFilters>(EMPTY_FILTERS);
   const { auth } = useAuth();
 
@@ -105,7 +87,7 @@ export const Listings = () => {
         filters={filters}
         onFiltersChange={setFilters}
         resultCount={filteredListings.length}
-        sortOptions={SORT_OPTIONS}
+        sortOptions={LISTING_SORT_OPTIONS}
         sortValue={sortOption}
         onSortChange={setSortOption}
         action={

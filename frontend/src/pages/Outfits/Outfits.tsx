@@ -7,51 +7,17 @@ import { ItemToolbar } from "../../components/ItemToolbar";
 import { DeleteOutfitDialog } from "../../components/DeleteOutfitDialog";
 import {
   EMPTY_FILTERS,
-  FILTER_FIELDS,
+  OUTFIT_FILTER_FIELDS,
   countActiveFilters,
   matchesFilters,
   type ItemFilters,
 } from "../../utils/itemFilters";
+import {
+  OUTFIT_SORT_OPTIONS,
+  compareOutfits,
+  type OutfitSortOption,
+} from "../../utils/sortOptions";
 import { Toast } from "../../components/ui/Toast";
-
-// size isn't meaningful for a whole outfit
-const OUTFIT_FILTER_FIELDS = FILTER_FIELDS.filter(({ key }) => key !== "size");
-
-const SORT_OPTIONS = [
-  { value: "newest", label: "Recently created" },
-  { value: "oldest", label: "Oldest" },
-  { value: "name-asc", label: "Name (A-Z)" },
-  { value: "name-desc", label: "Name (Z-A)" },
-  { value: "most-items", label: "Most items" },
-  { value: "fewest-items", label: "Fewest items" },
-] as const;
-
-type SortOption = (typeof SORT_OPTIONS)[number]["value"];
-
-// ids are auto-incremented, so they follow creation order
-const compareOutfits = (a: Outfit, b: Outfit, sort: SortOption) => {
-  const compareNames = () =>
-    (a.name ?? "Untitled Outfit").localeCompare(
-      b.name ?? "Untitled Outfit",
-      undefined,
-      { sensitivity: "base" },
-    );
-
-  switch (sort) {
-    case "newest":
-      return b.id - a.id;
-    case "oldest":
-      return a.id - b.id;
-    case "name-asc":
-      return compareNames();
-    case "name-desc":
-      return -compareNames();
-    case "most-items":
-      return b.items.length - a.items.length;
-    case "fewest-items":
-      return a.items.length - b.items.length;
-  }
-};
 
 export const Outfits = () => {
   const navigate = useNavigate();
@@ -67,7 +33,7 @@ export const Outfits = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(
     location.state?.toastMessage ?? null,
   );
-  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [sortOption, setSortOption] = useState<OutfitSortOption>("newest");
   const [filters, setFilters] = useState<ItemFilters>(EMPTY_FILTERS);
 
   // cleared from history so the message doesn't return on refresh
@@ -134,7 +100,7 @@ export const Outfits = () => {
         onFiltersChange={setFilters}
         resultCount={filteredOutfits.length}
         resultNoun="Outfit"
-        sortOptions={SORT_OPTIONS}
+        sortOptions={OUTFIT_SORT_OPTIONS}
         sortValue={sortOption}
         onSortChange={setSortOption}
         action={

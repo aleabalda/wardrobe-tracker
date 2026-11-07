@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { label: "Wardrobe", to: "/wardrobe", section: "/wardrobe" },
   { label: "Listings", to: "/listings", section: "/listings" },
   { label: "Outfits", to: "/outfits", section: "/outfits" },
+  { label: "Favourites", to: "/favourites", section: "/favourites" },
 ];
 
 export const Navbar = () => {

@@ -22,7 +22,7 @@ const FOOTER_SECTIONS = [
   {
     heading: "Account",
     links: [
-      { label: "Favourites", to: "/profile/favourites" },
+      { label: "Favourites", to: "/favourites" },
       { label: "My Outfits", to: "/profile/outfits" },
     ],
   },

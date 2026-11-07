@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home/Home";
 import { Login } from "./pages/Auth/Login";
@@ -12,7 +12,12 @@ import { ClothingItemExpanded } from "./pages/Wardrobe/ClothingItemExpanded";
 import { Listings } from "./pages/Listings/Listings";
 import { ListingItemExpanded } from "./pages/Listings/ListingItemExpanded";
 import { Profile } from "./pages/Profile/Profile";
-import { MyFavourites } from "./pages/Profile/MyFavourites";
+import {
+  Favourites,
+  SavedItems,
+  SavedListings,
+  SavedOutfits,
+} from "./pages/Favourites/Favourites";
 import { MyOutfits } from "./pages/Profile/MyOutfits";
 import { MyTransactions } from "./pages/Profile/MyTransactions";
 import { Messages } from "./pages/Messages/Messages";
@@ -36,9 +41,14 @@ function App() {
                   element={<ClothingItemExpanded />}
                 />
                 <Route path="/profile" element={<Profile />}>
-                  <Route path="favourites" element={<MyFavourites />} />
                   <Route path="outfits" element={<MyOutfits />} />
                   <Route path="transactions" element={<MyTransactions />} />
+                </Route>
+                <Route path="/favourites" element={<Favourites />}>
+                  <Route index element={<Navigate to="items" replace />} />
+                  <Route path="items" element={<SavedItems />} />
+                  <Route path="listings" element={<SavedListings />} />
+                  <Route path="outfits" element={<SavedOutfits />} />
                 </Route>
                 <Route path="/messages" element={<Messages />} />
                 <Route
