@@ -8,8 +8,8 @@ import { DeleteOutfitDialog } from "../../components/DeleteOutfitDialog";
 import {
   EMPTY_FILTERS,
   OUTFIT_FILTER_FIELDS,
-  countActiveFilters,
-  matchesFilters,
+  getOutfitFilterableItems,
+  outfitMatchesFilters,
   type ItemFilters,
 } from "../../utils/itemFilters";
 import {
@@ -80,13 +80,8 @@ export const Outfits = () => {
     setToastMessage(null);
   }, []);
 
-  // an outfit matches when at least one of its items matches the filters
   const filteredOutfits = outfits
-    .filter(
-      (outfit) =>
-        countActiveFilters(filters) === 0 ||
-        outfit.items.some((item) => matchesFilters(item, filters)),
-    )
+    .filter((outfit) => outfitMatchesFilters(outfit, filters))
     .sort((a, b) => compareOutfits(a, b, sortOption));
 
   return (
@@ -94,7 +89,7 @@ export const Outfits = () => {
       <Toast message={toastMessage} onClose={closeToast} />
       <h2 className="mb-4 text-5xl">Outfits</h2>
       <ItemToolbar
-        items={outfits.flatMap((outfit) => outfit.items)}
+        items={outfits.flatMap(getOutfitFilterableItems)}
         fields={OUTFIT_FILTER_FIELDS}
         filters={filters}
         onFiltersChange={setFilters}

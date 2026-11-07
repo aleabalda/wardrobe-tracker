@@ -67,7 +67,7 @@ export const Listings = () => {
       <ul className="mb-4 flex gap-4">
         <li
           onClick={() => {
-            setIsShopping(!isShopping);
+            setIsShopping(true);
           }}
           className={`text-sm hover:underline cursor-pointer ${isShopping ? `underline` : ``}`}
         >
@@ -75,7 +75,7 @@ export const Listings = () => {
         </li>
         <li
           onClick={() => {
-            setIsShopping(!isShopping);
+            setIsShopping(false);
           }}
           className={`text-sm hover:underline cursor-pointer ${isShopping ? `` : `underline`}`}
         >

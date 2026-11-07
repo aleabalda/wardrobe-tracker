@@ -13,8 +13,9 @@ import type { Outfit } from "../../types/Outfit";
 import {
   EMPTY_FILTERS,
   OUTFIT_FILTER_FIELDS,
-  countActiveFilters,
+  getOutfitFilterableItems,
   matchesFilters,
+  outfitMatchesFilters,
   type FilterField,
   type FilterableItem,
   type ItemFilters,
@@ -44,7 +45,7 @@ export const Favourites = () => (
             <NavLink
               to={to}
               className={({ isActive }) =>
-                `text-sm ${isActive ? "underline" : "hover:underline"}`
+                `text-xs ${isActive ? "underline" : "hover:underline"}`
               }
             >
               {label}
@@ -68,6 +69,7 @@ function SavedTab<Saved extends { id: number }, SortValue extends string>({
   sortOptions,
   compare,
   getFilterableItems,
+  matches,
   renderCard,
 }: {
   load: () => Promise<Saved[]>;
@@ -77,8 +79,9 @@ function SavedTab<Saved extends { id: number }, SortValue extends string>({
   resultNoun?: string;
   sortOptions: readonly { value: SortValue; label: string }[];
   compare: (a: Saved, b: Saved, sort: SortValue) => number;
-  /** A saved entry matches when at least one of these matches the filters */
+  /** What the filter options are built from */
   getFilterableItems: (saved: Saved) => FilterableItem[];
+  matches: (saved: Saved, filters: ItemFilters) => boolean;
   renderCard: (saved: Saved) => ReactNode;
 }) {
   const [saved, setSaved] = useState<Saved[]>([]);
@@ -103,13 +106,7 @@ function SavedTab<Saved extends { id: number }, SortValue extends string>({
   }, [load, noun]);
 
   const visibleSaved = saved
-    .filter(
-      (entry) =>
-        countActiveFilters(filters) === 0 ||
-        getFilterableItems(entry).some((item) =>
-          matchesFilters(item, filters),
-        ),
-    )
+    .filter((entry) => matches(entry, filters))
     .sort((a, b) => compare(a, b, sortOption));
 
   return (
@@ -160,7 +157,6 @@ const renderOutfit = (outfit: Outfit) => (
 );
 
 const asFilterableItems = (item: FilterableItem) => [item];
-const getOutfitItems = (outfit: Outfit) => outfit.items;
 
 export const SavedItems = () => (
   <SavedTab
@@ -169,6 +165,7 @@ export const SavedItems = () => (
     sortOptions={ITEM_SORT_OPTIONS}
     compare={compareItems}
     getFilterableItems={asFilterableItems}
+    matches={matchesFilters}
     renderCard={renderItem}
   />
 );
@@ -180,6 +177,7 @@ export const SavedListings = () => (
     sortOptions={LISTING_SORT_OPTIONS}
     compare={compareListings}
     getFilterableItems={asFilterableItems}
+    matches={matchesFilters}
     renderCard={renderListing}
   />
 );
@@ -192,7 +190,8 @@ export const SavedOutfits = () => (
     resultNoun="Outfit"
     sortOptions={OUTFIT_SORT_OPTIONS}
     compare={compareOutfits}
-    getFilterableItems={getOutfitItems}
+    getFilterableItems={getOutfitFilterableItems}
+    matches={outfitMatchesFilters}
     renderCard={renderOutfit}
   />
 );

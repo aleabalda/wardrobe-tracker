@@ -1,25 +1,36 @@
+import type { Outfit } from "../types/Outfit";
+
 export const FILTER_FIELDS = [
   { key: "color", label: "Color" },
   { key: "size", label: "Size" },
   { key: "brand", label: "Brand" },
 ] as const;
 
-// size isn't meaningful for a whole outfit
-export const OUTFIT_FILTER_FIELDS = FILTER_FIELDS.filter(
-  ({ key }) => key !== "size",
-);
+// belongs to an outfit as a whole, unlike the fields above
+const SEASON_FIELD = { key: "season", label: "Season" } as const;
 
-export type FilterField = (typeof FILTER_FIELDS)[number];
+// size isn't meaningful for a whole outfit
+export const OUTFIT_FILTER_FIELDS = [
+  ...FILTER_FIELDS.filter(({ key }) => key !== "size"),
+  SEASON_FIELD,
+];
+
+export type FilterField = (typeof FILTER_FIELDS)[number] | typeof SEASON_FIELD;
 export type FilterKey = FilterField["key"];
 export type ItemFilters = Record<FilterKey, string[]>;
-export type FilterableItem = Record<FilterKey, string | null>;
+export type FilterableItem = Partial<Record<FilterKey, string | null>>;
 
-export const EMPTY_FILTERS: ItemFilters = { color: [], size: [], brand: [] };
+export const EMPTY_FILTERS: ItemFilters = {
+  color: [],
+  size: [],
+  brand: [],
+  season: [],
+};
 
 const SIZE_ORDER = ["xxs", "xs", "s", "m", "l", "xl", "xxl", "xxxl"];
 
 // colour, size and brand are free text, so "Navy" and "navy " count as the same
-const normalize = (value: string | null) =>
+const normalize = (value: string | null | undefined) =>
   String(value ?? "")
     .trim()
     .toLowerCase();
@@ -66,6 +77,22 @@ export const matchesFilters = (item: FilterableItem, filters: ItemFilters) =>
       filters[key].some((value) => normalize(value) === normalize(item[key])),
   );
 
+/** What an outfit's filter options are built from: its items and its seasons. */
+export const getOutfitFilterableItems = (outfit: Outfit): FilterableItem[] => [
+  ...outfit.items,
+  ...outfit.season.map((season) => ({ season })),
+];
+
+/**
+ * An outfit must be in one of the selected seasons, and at least one of its
+ * items must match the other filters in use.
+ */
+export const outfitMatchesFilters = (outfit: Outfit, filters: ItemFilters) =>
+  (filters.season.length === 0 ||
+    outfit.season.some((season) => filters.season.includes(season))) &&
+  (FILTER_FIELDS.every(({ key }) => filters[key].length === 0) ||
+    outfit.items.some((item) => matchesFilters(item, filters)));
+
 export const toggleFilterValue = (
   filters: ItemFilters,
   key: FilterKey,
@@ -78,4 +105,4 @@ export const toggleFilterValue = (
 });
 
 export const countActiveFilters = (filters: ItemFilters) =>
-  FILTER_FIELDS.reduce((total, { key }) => total + filters[key].length, 0);
+  Object.values(filters).reduce((total, values) => total + values.length, 0);
