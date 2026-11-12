@@ -18,8 +18,10 @@ const OUTFIT_CATEGORIES = CLOTHING_TYPES.map(({ type }) => type).filter(
 
 // categories where an outfit can have more than one item (e.g. layering)
 const MULTI_SELECT_CATEGORIES: OutfitCategory[] = [
-  "Tops",
-  "Outerwear",
+  "T-Shirts",
+  "Sweaters",
+  "Jackets",
+  "Coats",
   "Accessories",
 ];
 
