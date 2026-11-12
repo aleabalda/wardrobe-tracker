@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
-// shown while hovering the row, centred on the h-56 images (top-28 = half);
-// touch screens can swipe instead, so they don't get them
 const arrowClass =
   "absolute top-28 z-1 flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center border border-black bg-white opacity-0 shadow-md transition-opacity duration-200 hover:bg-black hover:text-white focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:hidden";
 
