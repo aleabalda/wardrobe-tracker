@@ -182,7 +182,7 @@ export const ListingItemExpanded = () => {
         </div>
       </div>
 
-      <aside className="flex min-h-0 w-full flex-1 flex-col md:flex-none border-black md:w-96 md:shrink-0 md:border-l lg:w-md">
+      <aside className="flex min-h-0 w-full flex-1 flex-col md:flex-none md:w-96 md:shrink-0 lg:w-md">
         <div className="flex flex-1 flex-col overflow-y-auto p-5">
           <h1 className="text-2xl font-bold leading-tight">{item.name}</h1>
           <div className="mt-1 flex items-center gap-2">
