@@ -1,19 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useUnreadCount } from "../hooks/useUnreadCount";
 import { Navbar } from "./Navbar";
+import { APP_NAME, Logo } from "./Logo";
 
 const titleLink = (
-  <h1 className="font-title text-6xl uppercase font-semibold">
-    <Link to="/">Wardrobe Tracker</Link>
+  <h1 className="text-6xl">
+    <Link to="/" aria-label={`${APP_NAME} home`}>
+      <Logo />
+    </Link>
   </h1>
 );
 
 // Row heights add up to --header-height in Layout: the title row (5.25rem) + h-12
 // when logged in, h-20 for guests
 export const Header = () => {
-  const nav = useNavigate();
   const { pathname } = useLocation();
   const { auth, logout } = useAuth();
   const unreadCount = useUnreadCount();
@@ -41,25 +43,7 @@ export const Header = () => {
   if (auth.loading) return null;
 
   if (!auth.isAuthenticated) {
-    return (
-      <header className="sticky top-0 z-10 flex h-20 items-center justify-between bg-white px-12 text-black">
-        {titleLink}
-        <div className="flex gap-4">
-          <button
-            onClick={() => nav("/login")}
-            className="hover:cursor-pointer hover:underline text-sm"
-          >
-            Login
-          </button>
-          <button
-            onClick={() => nav("/register")}
-            className="hover:cursor-pointer hover:underline text-sm"
-          >
-            Register
-          </button>
-        </div>
-      </header>
-    );
+    return <GuestHeader overHero={pathname === "/"} />;
   }
 
   const isProfileActive =
@@ -115,5 +99,65 @@ export const Header = () => {
         <Navbar />
       </div>
     </>
+  );
+};
+
+// On the landing page the guest header floats over the dark hero (-mb-20 pulls
+// the hero up underneath it) and turns into a frosted white bar once scrolled
+const GuestHeader = ({ overHero }: { overHero: boolean }) => {
+  const headerRef = useRef<HTMLElement>(null);
+  const [isScrolled, setIsScrolled] = useState<boolean>(false);
+
+  useEffect(() => {
+    const main = headerRef.current?.closest("main");
+    if (!main) return;
+
+    const onScroll = () => setIsScrolled(main.scrollTop > 24);
+    onScroll();
+    main.addEventListener("scroll", onScroll, { passive: true });
+    return () => main.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const isTransparent = overHero && !isScrolled;
+
+  return (
+    <header
+      ref={headerRef}
+      className={`sticky top-0 z-10 flex h-20 items-center justify-between px-6 transition-colors duration-300 md:px-12 ${
+        overHero ? "-mb-20" : ""
+      } ${
+        isTransparent
+          ? "bg-transparent text-white"
+          : "border-b border-black/5 bg-white/85 text-black backdrop-blur-md"
+      }`}
+    >
+      <Link
+        to="/"
+        aria-label={`${APP_NAME} home`}
+        className="text-3xl transition-opacity hover:opacity-80"
+      >
+        <Logo />
+      </Link>
+      <nav className="flex items-center gap-2 text-sm font-medium">
+        <Link
+          to="/login"
+          className={`rounded-full px-4 py-2 transition-colors ${
+            isTransparent ? "hover:bg-white/10" : "hover:bg-black/5"
+          }`}
+        >
+          Log in
+        </Link>
+        <Link
+          to="/register"
+          className={`rounded-full px-5 py-2 font-semibold transition-colors ${
+            isTransparent
+              ? "bg-amber-500 text-black hover:bg-amber-400"
+              : "bg-neutral-900 text-white hover:bg-black"
+          }`}
+        >
+          Sign up
+        </Link>
+      </nav>
+    </header>
   );
 };

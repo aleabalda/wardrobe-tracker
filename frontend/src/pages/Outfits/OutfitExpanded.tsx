@@ -4,7 +4,7 @@ import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import IconButton from "@mui/material/IconButton";
 import { ClothingItemCard } from "../../components/ClothingItemCard";
-import { DeleteOutfitDialog } from "../../components/DeleteOutfitDialog";
+import { DeleteDialog } from "../../components/DeleteDialog";
 import {
   deleteOutfit,
   fetchOutfitById,
@@ -146,7 +146,8 @@ export const OutfitExpanded = () => {
       </Link>
 
       {isConfirmingDelete && (
-        <DeleteOutfitDialog
+        <DeleteDialog
+          noun="outfit"
           isDeleting={isDeleting}
           error={deleteError}
           onConfirm={() => {

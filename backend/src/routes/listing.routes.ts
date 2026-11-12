@@ -217,9 +217,13 @@ router.get("/:id", verifyToken, async (req, res) => {
         clothing_items.color,
         clothing_items.size,
         clothing_items.image_url,
-        saved.listing_id IS NOT NULL AS is_saved
+        saved.listing_id IS NOT NULL AS is_saved,
+        COALESCE(seller.username, seller.first_name, 'User') AS seller_name,
+        seller.avatar_url AS seller_avatar_url,
+        seller.created_at AS seller_joined_at
       FROM listings
       JOIN clothing_items ON listings.clothing_item_id = clothing_items.id
+      JOIN users seller ON seller.id = listings.seller_id
       LEFT JOIN saved_listings saved
         ON saved.listing_id = listings.id AND saved.user_id = ?
       WHERE listings.id = ?

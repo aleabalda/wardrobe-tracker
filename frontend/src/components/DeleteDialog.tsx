@@ -1,9 +1,12 @@
-export const DeleteOutfitDialog = ({
+// asks before deleting something, e.g. noun="outfit"
+export const DeleteDialog = ({
+  noun,
   isDeleting,
   error,
   onConfirm,
   onCancel,
 }: {
+  noun: string;
   isDeleting: boolean;
   error: string | null;
   onConfirm: () => void;
@@ -20,11 +23,11 @@ export const DeleteOutfitDialog = ({
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="delete-outfit-title"
+        aria-labelledby="delete-dialog-title"
         className="fixed transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 z-20 w-md max-w-[calc(100vw-2rem)] bg-white border border-black p-6 rounded shadow-lg flex flex-col gap-4"
       >
-        <h2 id="delete-outfit-title" className="text-lg">
-          Are you sure you want to delete this outfit?
+        <h2 id="delete-dialog-title" className="text-lg">
+          Are you sure you want to delete this {noun}?
         </h2>
         {error && <p className="text-xs text-red-600">{error}</p>}
         <div className="flex justify-end gap-4 text-sm">

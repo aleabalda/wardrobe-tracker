@@ -15,6 +15,11 @@ export const OUTFIT_FILTER_FIELDS = [
   SEASON_FIELD,
 ];
 
+// for pages that pick the season separately, above the filters
+export const OUTFIT_ITEM_FILTER_FIELDS = OUTFIT_FILTER_FIELDS.filter(
+  ({ key }) => key !== "season",
+);
+
 export type FilterField = (typeof FILTER_FIELDS)[number] | typeof SEASON_FIELD;
 export type FilterKey = FilterField["key"];
 export type ItemFilters = Record<FilterKey, string[]>;

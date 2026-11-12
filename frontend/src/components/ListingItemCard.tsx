@@ -43,12 +43,12 @@ export const ListingItemCard = ({ item }: { item: ListingItem }) => {
       <Link
         to={detailsPath}
         aria-label={`View details for ${item.name}`}
-        className="group block overflow-hidden"
+        className="group block overflow-hidden border border-transparent p-0.5 transition-colors hover:border-black focus-visible:border-black"
       >
         <img
           src={item.image_url}
           alt={item.name}
-          className="block w-full aspect-11/15 object-cover transition-transform ease-in-out duration-300 group-hover:scale-105 group-focus-visible:scale-105"
+          className="block w-full aspect-11/15 object-cover"
         />
       </Link>
       <div className="px-2 pt-3 text-sm">

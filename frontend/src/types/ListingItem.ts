@@ -17,3 +17,10 @@ export type ListingItem = {
   clothing_item_id: number;
   seller_id: number;
 };
+
+// the single listing endpoint also sends who's selling it
+export type ListingDetail = ListingItem & {
+  seller_name: string;
+  seller_avatar_url: string | null;
+  seller_joined_at: string;
+};

@@ -1,4 +1,4 @@
-import type { ListingItem } from "../types/ListingItem";
+import type { ListingDetail, ListingItem } from "../types/ListingItem";
 import type { ListingStatus } from "../utils/listingStatus";
 
 const API_BASE_URL = "http://localhost:3000/api/listing";
@@ -88,7 +88,7 @@ export const updateListingStatus = async (
   }
 };
 
-export const fetchListingById = async (id: string): Promise<ListingItem> => {
+export const fetchListingById = async (id: string): Promise<ListingDetail> => {
   const res = await fetch(`${API_BASE_URL}/${id}`, {
     method: "GET",
     credentials: "include",
@@ -100,5 +100,5 @@ export const fetchListingById = async (id: string): Promise<ListingItem> => {
     );
   }
 
-  return res.json() as Promise<ListingItem>;
+  return res.json() as Promise<ListingDetail>;
 };

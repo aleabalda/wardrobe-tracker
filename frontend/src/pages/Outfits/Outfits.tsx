@@ -4,11 +4,10 @@ import { deleteOutfit, fetchOutfits } from "../../api/outfits";
 import type { Outfit } from "../../types/Outfit";
 import { OutfitCard } from "../../components/OutfitCard";
 import { ItemToolbar } from "../../components/ItemToolbar";
-import { DeleteOutfitDialog } from "../../components/DeleteOutfitDialog";
+import { DeleteDialog } from "../../components/DeleteDialog";
 import {
   EMPTY_FILTERS,
-  OUTFIT_FILTER_FIELDS,
-  getOutfitFilterableItems,
+  OUTFIT_ITEM_FILTER_FIELDS,
   outfitMatchesFilters,
   type ItemFilters,
 } from "../../utils/itemFilters";
@@ -18,6 +17,12 @@ import {
   type OutfitSortOption,
 } from "../../utils/sortOptions";
 import { Toast } from "../../components/ui/Toast";
+import { CategorySelector } from "../../components/CategorySelector";
+import {
+  ALL_OUTFITS,
+  SEASON_OPTIONS,
+  type SeasonOption,
+} from "../../types/outfitSeasonOptions";
 
 export const Outfits = () => {
   const navigate = useNavigate();
@@ -35,6 +40,7 @@ export const Outfits = () => {
   );
   const [sortOption, setSortOption] = useState<OutfitSortOption>("newest");
   const [filters, setFilters] = useState<ItemFilters>(EMPTY_FILTERS);
+  const [activeSeason, setActiveSeason] = useState<SeasonOption>(ALL_OUTFITS);
 
   // cleared from history so the message doesn't return on refresh
   useEffect(() => {
@@ -80,17 +86,28 @@ export const Outfits = () => {
     setToastMessage(null);
   }, []);
 
-  const filteredOutfits = outfits
+  const seasonOutfits = outfits.filter(
+    (outfit) =>
+      activeSeason === ALL_OUTFITS || outfit.season.includes(activeSeason),
+  );
+
+  const filteredOutfits = seasonOutfits
     .filter((outfit) => outfitMatchesFilters(outfit, filters))
     .sort((a, b) => compareOutfits(a, b, sortOption));
 
   return (
     <div className="p-12 pt-6">
       <Toast message={toastMessage} onClose={closeToast} />
-      <h2 className="mb-4 text-5xl">Outfits</h2>
+      <CategorySelector
+        options={SEASON_OPTIONS}
+        activeValue={activeSeason}
+        onSelect={setActiveSeason}
+        count={seasonOutfits.length}
+        allNoun="Outfits"
+      />
       <ItemToolbar
-        items={outfits.flatMap(getOutfitFilterableItems)}
-        fields={OUTFIT_FILTER_FIELDS}
+        items={seasonOutfits.flatMap((outfit) => outfit.items)}
+        fields={OUTFIT_ITEM_FILTER_FIELDS}
         filters={filters}
         onFiltersChange={setFilters}
         resultCount={filteredOutfits.length}
@@ -117,6 +134,10 @@ export const Outfits = () => {
         <p className="mt-4 text-sm text-red-600">{error}</p>
       ) : outfits.length === 0 ? (
         <p className="mt-4 text-sm text-gray-500">No outfits yet.</p>
+      ) : seasonOutfits.length === 0 ? (
+        <p className="mt-4 text-sm text-gray-500">
+          No {activeSeason} outfits yet.
+        </p>
       ) : filteredOutfits.length === 0 ? (
         <p className="mt-4 text-sm text-gray-500">
           No outfits match these filters.
@@ -137,7 +158,8 @@ export const Outfits = () => {
       )}
 
       {confirmingId !== null && (
-        <DeleteOutfitDialog
+        <DeleteDialog
+          noun="outfit"
           isDeleting={deletingId !== null}
           error={deleteError}
           onConfirm={() => {

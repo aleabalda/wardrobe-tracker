@@ -62,9 +62,12 @@ function App() {
                 />
                 <Route path="/outfits/:id" element={<OutfitExpanded />} />
                 <Route path="/listings" element={<Listings />} />
-                <Route path="/listings/:id" element={<ListingItemExpanded />} />
               </Route>
               <Route path="*" element={<NotFound />} />
+            </Route>
+            {/* full-screen pages, outside the header and footer */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/listings/:id" element={<ListingItemExpanded />} />
             </Route>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

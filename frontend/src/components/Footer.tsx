@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { APP_NAME, Logo } from "./Logo";
 
 const FOOTER_SECTIONS = [
   {
@@ -50,8 +51,8 @@ export const Footer = () => {
     >
       <div className="flex flex-col gap-10 md:flex-row md:justify-between">
         <div className="max-w-sm">
-          <Link to="/" className="text-2xl font-semibold">
-            Wardrobe.io
+          <Link to="/" aria-label={`${APP_NAME} home`} className="text-2xl">
+            <Logo />
           </Link>
           <p className="mt-2 text-sm text-gray-400">
             Build your digital wardrobe, showcase your style, and turn your
@@ -101,7 +102,7 @@ export const Footer = () => {
 
       <div className="mt-10 flex flex-col gap-2 border-t border-gray-700 pt-6 text-xs text-gray-400 sm:flex-row sm:items-center sm:justify-between">
         <p>
-          &copy; {new Date().getFullYear()} Wardrobe.io. All rights reserved.
+          &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
         </p>
         <button
           type="button"

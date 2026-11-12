@@ -69,7 +69,7 @@ export const MainFeatureSection = () => {
           Create a digital wardrobe of everything you own, from everyday
           essentials to statement fits, all in one place. Whether you're
           planning outfits for the week or cataloguing your favourite looks,
-          Wardrobe.io helps you see your style from a new perspective.
+          Rehang helps you see your style from a new perspective.
         </p>
         <ul className="flex flex-col gap-3">
           {POINTS.map((point) => (

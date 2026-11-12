@@ -36,7 +36,7 @@ export const TripleFeaturesSection = () => {
           </h2>
         </div>
         <p className="max-w-sm text-neutral-600">
-          From cataloguing to styling to selling, Wardrobe.io covers the whole
+          From cataloguing to styling to selling, Rehang covers the whole
           life of your clothes.
         </p>
       </Reveal>

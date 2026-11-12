@@ -1,10 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { register } from "../../api/registerFunction";
 import { SubmitButton, TextField } from "../../components/ui/FormField";
 
 export const Register = () => {
   const nav = useNavigate();
+  // passed on so logging in afterwards still returns to the original page
+  const { state } = useLocation();
   const [username, setUsername] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
@@ -30,7 +32,7 @@ export const Register = () => {
       });
       console.log("Registered!");
       setLoading(false);
-      nav("/login");
+      nav("/login", { state });
       // redirect to login or auto-login
     } catch (err) {
       setError((err as Error).message);
@@ -95,7 +97,7 @@ export const Register = () => {
           {loading ? "Creating Account..." : "Create Account"}
         </SubmitButton>
         {error && <p className="text-red-600 text-sm">{error}</p>}
-        <Link to="/login" className="w-fit text-sm underline">
+        <Link to="/login" state={state} className="w-fit text-sm underline">
           Already have an account? Login here.
         </Link>
       </form>
