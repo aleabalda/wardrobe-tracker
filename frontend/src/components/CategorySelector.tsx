@@ -15,6 +15,7 @@ export function CategorySelector<Value extends string>({
   onSelect,
   count,
   allNoun,
+  getHeading = (value) => value,
 }: {
   options: readonly { value: Value; image: string }[];
   activeValue: Value;
@@ -23,6 +24,8 @@ export function CategorySelector<Value extends string>({
   count: number;
   /** What everything is called next to the count, e.g. "Clothing" */
   allNoun: string;
+  /** The big heading for the active category; defaults to its name */
+  getHeading?: (value: Value) => string;
 }) {
   const allValue = options[0].value;
   const isAll = activeValue === allValue;
@@ -68,7 +71,7 @@ export function CategorySelector<Value extends string>({
           {isAll ? allNoun : activeValue} <sup>{count}</sup>
         </p>
       </div>
-      <h2 className="text-5xl mb-8">{activeValue}</h2>
+      <h2 className="text-5xl mb-8">{getHeading(activeValue)}</h2>
       <div className="group relative">
         {canScrollLeft && (
           <button

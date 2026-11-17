@@ -1,5 +1,10 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import {
+  NavLink,
+  Outlet,
+  useLocation,
+  useOutletContext,
+} from "react-router-dom";
 import { fetchAllListings } from "../../api/listings";
 import { fetchOutfits } from "../../api/outfits";
 import { fetchClothingItems } from "../../api/wardrobe";
@@ -35,28 +40,46 @@ const TABS = [
   { label: "Saved Outfits", to: "/favourites/outfits" },
 ];
 
-export const Favourites = () => (
-  <div className="p-12 pt-6">
-    <h2 className="mb-4 text-5xl">Favourites</h2>
-    <nav aria-label="Favourites">
-      <ul className="mb-4 flex gap-4">
-        {TABS.map(({ label, to }) => (
-          <li key={to}>
-            <NavLink
-              to={to}
-              className={({ isActive }) =>
-                `text-xs ${isActive ? "underline" : "hover:underline"}`
-              }
-            >
-              {label}
-            </NavLink>
-          </li>
-        ))}
-      </ul>
-    </nav>
-    <Outlet />
-  </div>
-);
+/** Lets the open tab report how many things it has saved */
+type FavouritesContext = { setSavedCount: (count: number | null) => void };
+
+export const Favourites = () => {
+  // null until the open tab has loaded
+  const [savedCount, setSavedCount] = useState<number | null>(null);
+  const { pathname } = useLocation();
+  const activeTab = TABS.find(({ to }) => pathname.startsWith(to));
+
+  return (
+    <div className="p-12 pt-6">
+      {activeTab && (
+        <div className="mb-8 text-sm">
+          <p className="text-xs">All Favourites — {activeTab.label}</p>
+          <p className="text-xs">
+            {activeTab.label} <sup>{savedCount ?? ""}</sup>
+          </p>
+        </div>
+      )}
+      <h2 className="mb-4 text-5xl">Favourites</h2>
+      <nav aria-label="Favourites">
+        <ul className="mb-4 flex gap-4">
+          {TABS.map(({ label, to }) => (
+            <li key={to}>
+              <NavLink
+                to={to}
+                className={({ isActive }) =>
+                  `text-xs ${isActive ? "underline" : "hover:underline"}`
+                }
+              >
+                {label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <Outlet context={{ setSavedCount } satisfies FavouritesContext} />
+    </div>
+  );
+};
 
 // each tab is its own route, so switching tabs reloads it and anything unsaved
 // since the last visit is gone; until then its card stays so it can be undone.
@@ -89,6 +112,11 @@ function SavedTab<Saved extends { id: number }, SortValue extends string>({
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortValue>(sortOptions[0].value);
   const [filters, setFilters] = useState<ItemFilters>(EMPTY_FILTERS);
+  const { setSavedCount } = useOutletContext<FavouritesContext>();
+
+  useEffect(() => {
+    setSavedCount(isLoading || error ? null : saved.length);
+  }, [setSavedCount, isLoading, error, saved.length]);
 
   useEffect(() => {
     const loadSaved = async () => {

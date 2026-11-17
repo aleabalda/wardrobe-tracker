@@ -104,6 +104,9 @@ export const Outfits = () => {
         onSelect={setActiveSeason}
         count={seasonOutfits.length}
         allNoun="Outfits"
+        getHeading={(season) =>
+          season === ALL_OUTFITS ? season : `${season} Outfits`
+        }
       />
       <ItemToolbar
         items={seasonOutfits.flatMap((outfit) => outfit.items)}

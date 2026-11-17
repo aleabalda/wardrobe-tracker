@@ -64,24 +64,6 @@ export const Listings = () => {
         onSelect={setActiveClothingType}
         count={typeListings.length}
       />
-      <ul className="mb-4 flex gap-4">
-        <li
-          onClick={() => {
-            setIsShopping(true);
-          }}
-          className={`text-sm hover:underline cursor-pointer ${isShopping ? `underline` : ``}`}
-        >
-          Shop
-        </li>
-        <li
-          onClick={() => {
-            setIsShopping(false);
-          }}
-          className={`text-sm hover:underline cursor-pointer ${isShopping ? `` : `underline`}`}
-        >
-          Sell
-        </li>
-      </ul>
       <ItemToolbar
         items={typeListings}
         filters={filters}
@@ -91,14 +73,26 @@ export const Listings = () => {
         sortValue={sortOption}
         onSortChange={setSortOption}
         action={
-          !isShopping && (
+          <>
             <button
               type="button"
+              aria-label={isShopping ? "Switch to Sell" : "Switch to Shop"}
+              onClick={() => {
+                setIsShopping((prev) => !prev);
+              }}
               className="cursor-pointer border border-black bg-black px-2 py-1 text-xs text-white transition-colors hover:bg-white hover:text-black"
             >
-              Create Listing
+              {isShopping ? "Shop" : "Sell"}
             </button>
-          )
+            {!isShopping && (
+              <button
+                type="button"
+                className="cursor-pointer px-2 py-1 text-xs bg-black text-white transition-colors hover:bg-white hover:text-black hover:outline hover:outline-black"
+              >
+                Create Listing
+              </button>
+            )}
+          </>
         }
       />
       <div>
