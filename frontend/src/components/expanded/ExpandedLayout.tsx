@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CloseIcon from "@mui/icons-material/Close";
 import { APP_NAME, LogoMark } from "../Logo";
 import { BlurredImage } from "../ui/BlurredImage";
@@ -15,7 +16,7 @@ export const ExpandedLayout = ({
   imageUrl,
   imageAlt,
   closeLabel,
-  fallbackPath,
+  closePath,
   overlays,
   footer,
   children,
@@ -24,8 +25,8 @@ export const ExpandedLayout = ({
   imageAlt: string;
   /** e.g. "Close listing" */
   closeLabel: string;
-  /** Where closing goes when there's no page to go back to */
-  fallbackPath: string;
+  /** The page the X goes to, e.g. "/wardrobe" */
+  closePath: string;
   /** Toasts and dialogs that float over the page */
   overlays?: ReactNode;
   /** Pinned below the scrolling panel content */
@@ -33,14 +34,10 @@ export const ExpandedLayout = ({
   children: ReactNode;
 }) => {
   const navigate = useNavigate();
-
-  const close = () => {
-    if ((window.history.state as { idx?: number } | null)?.idx) {
-      navigate(-1);
-    } else {
-      navigate(fallbackPath);
-    }
-  };
+  // React Router counts in-app history from 0, so there's somewhere in the
+  // app to go back to only past the first entry; opened directly, it's hidden
+  const canGoBack =
+    ((window.history.state as { idx?: number } | null)?.idx ?? 0) > 0;
 
   return (
     <div className="relative flex h-dvh w-full flex-col overflow-hidden md:flex-row">
@@ -49,14 +46,26 @@ export const ExpandedLayout = ({
       <div className="relative h-[55dvh] min-w-0 shrink-0 bg-neutral-900 md:h-full md:flex-1">
         <BlurredImage src={imageUrl} alt={imageAlt} className="h-full w-full" />
         <div className="absolute left-4 top-4 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={close}
+          {canGoBack && (
+            <button
+              type="button"
+              onClick={() => {
+                void navigate(-1);
+              }}
+              aria-label="Go back"
+              title="Back"
+              className={overlayButtonClass}
+            >
+              <ArrowBackIcon />
+            </button>
+          )}
+          <Link
+            to={closePath}
             aria-label={closeLabel}
             className={overlayButtonClass}
           >
             <CloseIcon />
-          </button>
+          </Link>
           <Link
             to="/"
             aria-label={`${APP_NAME} home`}

@@ -118,7 +118,7 @@ export const ListingItemExpanded = () => {
       imageUrl={item.image_url}
       imageAlt={item.name}
       closeLabel="Close listing"
-      fallbackPath="/listings"
+      closePath="/listings"
       overlays={<Toast message={toastMessage} onClose={closeToast} />}
       footer={
         // sellers can't message themselves about their own listing

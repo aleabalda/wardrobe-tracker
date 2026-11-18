@@ -1,37 +1,34 @@
-import { NavLink, Outlet } from "react-router-dom";
-import { MyDetails } from "./MyDetails";
+import { useEffect, useState } from "react";
+import { fetchUserDetails } from "../../api/user";
+import type { UserDetails } from "../../types/UserDetails";
+import { AccountDetails } from "./AccountDetails";
+import { ProfileSummary } from "./ProfileSummary";
 
 export const Profile = () => {
-  const linkStyle = ({ isActive }: { isActive: boolean }) =>
-    `text-sm cursor-pointer hover:underline ${isActive ? "underline" : ""}`;
+  const [user, setUser] = useState<UserDetails | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchUserDetails().then(setUser, (error: unknown) => {
+      console.error("Unable to load profile:", error);
+      setError("Unable to load your profile.");
+    });
+  }, []);
 
   return (
-    <div className="h-page px-12 pt-10 flex flex-col gap-2">
-      <h2 className="text-xl font-semibold mb-2">Profile</h2>
-      <nav>
-        <ul className="flex gap-4">
-          <li>
-            <NavLink to="/profile/outfits" className={linkStyle}>
-              My Outfits
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/profile/transactions" className={linkStyle}>
-              My Transactions
-            </NavLink>
-          </li>
-        </ul>
-      </nav>
-      <div className="w-full h-px rounded bg-black" />
+    <div className="p-12 pt-6">
+      <h2 className="mb-8 text-5xl">Profile</h2>
 
-      <div className="py-4 flex flex-1 min-h-0">
-        <div className="h-full">
-          <MyDetails />
+      {error ? (
+        <p className="text-sm text-red-600">{error}</p>
+      ) : !user ? (
+        <p className="text-sm text-gray-500">Loading profile...</p>
+      ) : (
+        <div className="grid gap-12 md:grid-cols-[18rem_1fr] lg:gap-20">
+          <ProfileSummary user={user} onUserChange={setUser} />
+          <AccountDetails user={user} onUserChange={setUser} />
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <Outlet />
-        </div>
-      </div>
+      )}
     </div>
   );
 };

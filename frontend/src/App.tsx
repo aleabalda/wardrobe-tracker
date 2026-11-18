@@ -18,8 +18,6 @@ import {
   SavedListings,
   SavedOutfits,
 } from "./pages/Favourites/Favourites";
-import { MyOutfits } from "./pages/Profile/MyOutfits";
-import { MyTransactions } from "./pages/Profile/MyTransactions";
 import { Messages } from "./pages/Messages/Messages";
 import { NotFound } from "./pages/NotFound/NotFound";
 import { Outfits } from "./pages/Outfits/Outfits";
@@ -36,10 +34,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/wardrobe" element={<Wardrobe />} />
-                <Route path="/profile" element={<Profile />}>
-                  <Route path="outfits" element={<MyOutfits />} />
-                  <Route path="transactions" element={<MyTransactions />} />
-                </Route>
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/favourites" element={<Favourites />}>
                   <Route index element={<Navigate to="items" replace />} />
                   <Route path="items" element={<SavedItems />} />

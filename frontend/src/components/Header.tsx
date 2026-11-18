@@ -46,8 +46,7 @@ export const Header = () => {
     return <GuestHeader overHero={pathname === "/"} />;
   }
 
-  const isProfileActive =
-    pathname === "/profile" || pathname.startsWith("/profile/");
+  const isProfileActive = pathname === "/profile";
   const isMessagesActive =
     pathname === "/messages" || pathname.startsWith("/messages/");
 
@@ -75,7 +74,7 @@ export const Header = () => {
           )}
         </Link>
         <Link
-          to="/profile/outfits"
+          to="/profile"
           aria-current={isProfileActive ? "page" : undefined}
           className={isProfileActive ? "underline" : "hover:underline"}
         >

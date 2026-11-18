@@ -17,14 +17,13 @@ const FOOTER_SECTIONS = [
     links: [
       { label: "Shop Listings", to: "/listings" },
       { label: "Messages", to: "/messages" },
-      { label: "Transactions", to: "/profile/transactions" },
     ],
   },
   {
     heading: "Account",
     links: [
       { label: "Favourites", to: "/favourites" },
-      { label: "My Outfits", to: "/profile/outfits" },
+      { label: "Profile", to: "/profile" },
     ],
   },
 ];

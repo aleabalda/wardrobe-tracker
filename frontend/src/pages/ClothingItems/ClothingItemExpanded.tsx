@@ -91,7 +91,7 @@ export const ClothingItemExpanded = () => {
       imageUrl={item.image_url}
       imageAlt={item.name}
       closeLabel="Close item"
-      fallbackPath="/wardrobe"
+      closePath="/wardrobe"
       overlays={
         <>
           <Toast message={toastMessage} onClose={closeToast} />

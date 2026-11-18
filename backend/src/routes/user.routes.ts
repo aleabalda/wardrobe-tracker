@@ -20,43 +20,130 @@ interface UserDetailsRow extends RowDataPacket {
   first_name: string | null;
   last_name: string | null;
   phone_number: string | null;
+  bio: string | null;
   avatar_url: string | null;
   created_at: Date;
+  item_count: number;
+  outfit_count: number;
+  active_listing_count: number;
 }
+
+// the account details plus a few counts for the profile overview
+const fetchUserDetails = async (userId: number) => {
+  const [rows] = await pool.query<UserDetailsRow[]>(
+    `
+    SELECT
+      id,
+      email,
+      username,
+      first_name,
+      last_name,
+      phone_number,
+      bio,
+      avatar_url,
+      created_at,
+      (SELECT COUNT(*) FROM clothing_items WHERE user_id = users.id)
+        AS item_count,
+      (SELECT COUNT(*) FROM outfits WHERE user_id = users.id) AS outfit_count,
+      (
+        SELECT COUNT(*) FROM listings
+        WHERE seller_id = users.id AND status = 'active'
+      ) AS active_listing_count
+    FROM users
+    WHERE id = ?
+    `,
+    [userId],
+  );
+
+  return rows[0] ?? null;
+};
 
 router.get("/fetch", verifyToken, async (req, res) => {
   try {
-    const userId = req.user!.id;
+    const user = await fetchUserDetails(req.user!.id);
 
-    const [rows] = await pool.query<UserDetailsRow[]>(
-      `
-      SELECT
-        id,
-        email,
-        username,
-        first_name,
-        last_name,
-        phone_number,
-        avatar_url,
-        created_at
-      FROM users
-      WHERE id = ?
-      `,
-      [userId],
-    );
-
-    if (rows.length === 0) {
+    if (!user) {
       return res.status(404).json({
         message: "User not found.",
       });
     }
 
-    return res.status(200).json(rows[0]);
+    return res.status(200).json(user);
   } catch (err) {
     console.error(err);
 
     return res.status(500).json({
       message: "Failed to fetch user details.",
+    });
+  }
+});
+
+// longest each editable field may be, matching the users table
+const PROFILE_FIELD_LIMITS = {
+  username: 50,
+  first_name: 100,
+  last_name: 100,
+  phone_number: 50,
+  bio: 500,
+} as const;
+
+type ProfileField = keyof typeof PROFILE_FIELD_LIMITS;
+
+// email and password aren't editable here since they're used to sign in
+router.put("/profile", verifyToken, async (req, res) => {
+  const userId = req.user!.id;
+  const values = {} as Record<ProfileField, string | null>;
+
+  for (const field of Object.keys(PROFILE_FIELD_LIMITS) as ProfileField[]) {
+    const raw: unknown = req.body[field];
+
+    if (raw !== undefined && raw !== null && typeof raw !== "string") {
+      return res.status(400).json({ message: `${field} must be text.` });
+    }
+
+    // blank optional fields are stored as NULL
+    const value = typeof raw === "string" ? raw.trim() : "";
+
+    if (value.length > PROFILE_FIELD_LIMITS[field]) {
+      return res.status(400).json({
+        message: `${field} must be at most ${PROFILE_FIELD_LIMITS[field]} characters.`,
+      });
+    }
+
+    values[field] = value === "" ? null : value;
+  }
+
+  if (!values.username) {
+    return res.status(400).json({ message: "Username is required." });
+  }
+
+  try {
+    await pool.query<ResultSetHeader>(
+      `
+      UPDATE users
+      SET username = ?, first_name = ?, last_name = ?, phone_number = ?, bio = ?
+      WHERE id = ?
+      `,
+      [
+        values.username,
+        values.first_name,
+        values.last_name,
+        values.phone_number,
+        values.bio,
+        userId,
+      ],
+    );
+
+    return res.status(200).json(await fetchUserDetails(userId));
+  } catch (err) {
+    if ((err as { code?: string }).code === "ER_DUP_ENTRY") {
+      return res.status(409).json({ message: "That username is taken." });
+    }
+
+    console.error(err);
+
+    return res.status(500).json({
+      message: "Failed to update profile.",
     });
   }
 });

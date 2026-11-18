@@ -1,5 +1,6 @@
 import defaultAvatar from "../../assets/images/avatar.webp";
 import { APP_NAME, LogoMark } from "../Logo";
+import { formatJoinedDate } from "../../utils/formatJoinedDate";
 
 /** Avatar, name and join year at the bottom of a detail page's panel */
 export const OwnerInfo = ({
@@ -17,8 +18,7 @@ export const OwnerInfo = ({
   /** Marks the name with "(You)" */
   isYou: boolean;
 }) => {
-  // left out rather than shown as "NaN" if the date is missing
-  const joinedYear = new Date(joinedAt).getFullYear();
+  const joined = formatJoinedDate(joinedAt);
 
   return (
     <section className="mt-auto pt-6">
@@ -34,10 +34,10 @@ export const OwnerInfo = ({
             {name}
             {isYou && <span className="text-gray-500 text-xs"> (You)</span>}
           </p>
-          {!Number.isNaN(joinedYear) && (
+          {joined && (
             <p className="mt-0.5 flex items-center gap-1.5 text-xs text-gray-500">
               <LogoMark className="h-3 w-auto text-black" />
-              Joined {APP_NAME} in {joinedYear}
+              Joined {APP_NAME} in {joined}
             </p>
           )}
         </div>
