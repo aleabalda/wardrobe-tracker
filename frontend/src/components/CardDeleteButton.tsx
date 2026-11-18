@@ -15,7 +15,7 @@ export const CardDeleteButton = ({
     type="button"
     aria-label={label}
     onClick={onClick}
-    className="absolute right-2 top-2 cursor-pointer rounded bg-white px-2 py-1 text-xs opacity-0 shadow transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+    className="absolute right-2 top-2 cursor-pointer border border-black bg-white px-2 py-1 text-xs opacity-0 shadow transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
   >
     Delete
   </button>

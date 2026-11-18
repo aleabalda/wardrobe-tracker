@@ -21,6 +21,7 @@ interface UserDetailsRow extends RowDataPacket {
   last_name: string | null;
   phone_number: string | null;
   avatar_url: string | null;
+  created_at: Date;
 }
 
 router.get("/fetch", verifyToken, async (req, res) => {
@@ -36,7 +37,8 @@ router.get("/fetch", verifyToken, async (req, res) => {
         first_name,
         last_name,
         phone_number,
-        avatar_url
+        avatar_url,
+        created_at
       FROM users
       WHERE id = ?
       `,

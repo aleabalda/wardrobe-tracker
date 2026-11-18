@@ -1,13 +1,17 @@
 import { useEffect, useState, type ReactNode } from "react";
 import {
-  NavLink,
   Outlet,
   useLocation,
+  useNavigate,
   useOutletContext,
 } from "react-router-dom";
 import { fetchAllListings } from "../../api/listings";
 import { fetchOutfits } from "../../api/outfits";
 import { fetchClothingItems } from "../../api/wardrobe";
+import savedItemImage from "../../assets/images/saved-item.jpeg";
+import savedListingImage from "../../assets/images/saved-listing.jpeg";
+import savedOutfitImage from "../../assets/images/saved-outfit.jpeg";
+import { CategorySelector } from "../../components/CategorySelector";
 import { ClothingItemCard } from "../../components/ClothingItemCard";
 import { ListingItemCard } from "../../components/ListingItemCard";
 import { ItemToolbar } from "../../components/ItemToolbar";
@@ -35,10 +39,20 @@ import {
 } from "../../utils/sortOptions";
 
 const TABS = [
-  { label: "Saved Items", to: "/favourites/items" },
-  { label: "Saved Listings", to: "/favourites/listings" },
-  { label: "Saved Outfits", to: "/favourites/outfits" },
-];
+  { value: "Saved Items", to: "/favourites/items", image: savedItemImage },
+  {
+    value: "Saved Listings",
+    to: "/favourites/listings",
+    image: savedListingImage,
+  },
+  {
+    value: "Saved Outfits",
+    to: "/favourites/outfits",
+    image: savedOutfitImage,
+  },
+] as const;
+
+type SavedTabName = (typeof TABS)[number]["value"];
 
 /** Lets the open tab report how many things it has saved */
 type FavouritesContext = { setSavedCount: (count: number | null) => void };
@@ -47,35 +61,24 @@ export const Favourites = () => {
   // null until the open tab has loaded
   const [savedCount, setSavedCount] = useState<number | null>(null);
   const { pathname } = useLocation();
-  const activeTab = TABS.find(({ to }) => pathname.startsWith(to));
+  const navigate = useNavigate();
+  // the index route redirects to the first tab, so default to it meanwhile
+  const activeTab = TABS.find(({ to }) => pathname.startsWith(to)) ?? TABS[0];
 
   return (
     <div className="p-12 pt-6">
-      {activeTab && (
-        <div className="mb-8 text-sm">
-          <p className="text-xs">All Favourites — {activeTab.label}</p>
-          <p className="text-xs">
-            {activeTab.label} <sup>{savedCount ?? ""}</sup>
-          </p>
-        </div>
-      )}
-      <h2 className="mb-4 text-5xl">Favourites</h2>
-      <nav aria-label="Favourites">
-        <ul className="mb-4 flex gap-4">
-          {TABS.map(({ label, to }) => (
-            <li key={to}>
-              <NavLink
-                to={to}
-                className={({ isActive }) =>
-                  `text-xs ${isActive ? "underline" : "hover:underline"}`
-                }
-              >
-                {label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <CategorySelector<SavedTabName>
+        options={TABS}
+        activeValue={activeTab.value}
+        onSelect={(value) => {
+          const tab = TABS.find((t) => t.value === value);
+          if (tab) void navigate(tab.to);
+        }}
+        count={savedCount}
+        allNoun="Favourites"
+        rootLabel="All Favourites"
+        getHeading={() => "Favourites"}
+      />
       <Outlet context={{ setSavedCount } satisfies FavouritesContext} />
     </div>
   );

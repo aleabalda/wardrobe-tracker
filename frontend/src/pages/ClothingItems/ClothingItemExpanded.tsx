@@ -1,16 +1,29 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CreateListingForm } from "../../components/CreateListingForm";
-import { BlurredImage } from "../../components/ui/BlurredImage";
-import { SelectField } from "../../components/ui/FormField";
-
-import type { ClothingItem } from "../../types/ClothingItems";
-import { deleteClothingItem, fetchClothingItemById } from "../../api/wardrobe";
-import { updateListingStatus } from "../../api/listings";
 import {
-  LISTING_STATUSES,
-  type ListingStatus,
-} from "../../utils/listingStatus";
+  ActionRow,
+  SaveButton,
+  ShareButton,
+} from "../../components/expanded/ActionButtons";
+import { primaryButtonClass } from "../../components/expanded/expandedStyles";
+import { useSavedToggle } from "../../components/expanded/useSavedToggle";
+import { ExpandedLayout } from "../../components/expanded/ExpandedLayout";
+import { ItemDetails, ItemHeader } from "../../components/expanded/ItemSummary";
+import { OwnerInfo } from "../../components/expanded/OwnerInfo";
+import { Toast } from "../../components/ui/Toast";
+import { fetchClothingItemById, updateFavourite } from "../../api/wardrobe";
+import { fetchUserDetails } from "../../api/user";
+import type { UserDetails } from "../../types/UserDetails";
+import type { ClothingItem } from "../../types/ClothingItems";
+import { getListingStatusBadge } from "../../utils/listingStatus";
+import { ItemFooter } from "./expanded/ItemFooter";
+import { ListingStatusControl } from "./expanded/ListingStatusControl";
+import {
+  RecentOutfitsSection,
+  SimilarItemsSection,
+} from "./expanded/RelatedSections";
+import { useRelatedItems } from "./expanded/useRelatedItems";
 
 export const ClothingItemExpanded = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,9 +31,15 @@ export const ClothingItemExpanded = () => {
 
   const [item, setItem] = useState<ClothingItem | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isListingItem, setIsListingItem] = useState<boolean>(false);
-  const [isSavingStatus, setIsSavingStatus] = useState<boolean>(false);
+  const [owner, setOwner] = useState<UserDetails | null>(null);
+  const { recentOutfits, similarItems } = useRelatedItems(item);
+  const saved = useSavedToggle((isSaved) => {
+    if (!item) return Promise.resolve(isSaved);
+    return updateFavourite(item.id, isSaved);
+  });
+  const { setIsSaved } = saved;
 
   useEffect(() => {
     if (!id) {
@@ -34,6 +53,7 @@ export const ClothingItemExpanded = () => {
 
         const clothingItem = await fetchClothingItemById(id);
         setItem(clothingItem);
+        setIsSaved(Boolean(clothingItem.is_favourite));
       } catch (error) {
         setError(
           error instanceof Error
@@ -44,51 +64,19 @@ export const ClothingItemExpanded = () => {
     };
 
     void loadItem();
-  }, [id]);
+  }, [id, setIsSaved]);
 
-  const editError = (error: string) => {
-    setError(error);
-  };
+  // items can only be opened by their owner, so that's always the signed-in
+  // user; if this fails the section is just left out
+  useEffect(() => {
+    fetchUserDetails().then(setOwner, (error: unknown) => {
+      console.error("Unable to load user details:", error);
+    });
+  }, []);
 
-  const handleDelete = async () => {
-    if (!id || isDeleting) return;
-
-    try {
-      setIsDeleting(true);
-      setError(null);
-
-      await deleteClothingItem(id);
-      navigate("/wardrobe");
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to delete clothing item.",
-      );
-
-      setIsDeleting(false);
-    }
-  };
-
-  const handleStatusChange = async (status: ListingStatus) => {
-    if (!item?.listing_id || isSavingStatus) return;
-
-    try {
-      setIsSavingStatus(true);
-      setError(null);
-
-      await updateListingStatus(item.listing_id, status);
-      setItem({ ...item, listing_status: status });
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to update listing status.",
-      );
-    } finally {
-      setIsSavingStatus(false);
-    }
-  };
+  const closeToast = useCallback(() => {
+    setToastMessage(null);
+  }, []);
 
   if (error && !item) {
     return <p className="p-4">{error}</p>;
@@ -98,106 +86,114 @@ export const ClothingItemExpanded = () => {
     return <p className="p-4">Loading item...</p>;
   }
 
-  const toggleForm = () => {
-    setIsListingItem(!isListingItem);
-  };
-
   return (
-    <div className="flex h-page gap-3 p-4">
-      {isListingItem && (
-        <CreateListingForm
-          clothingItem={item}
-          toggleForm={toggleForm}
-          editError={editError}
-          onListingCreated={(description, listingId) => {
-            setItem({
-              ...item,
-              description,
-              is_for_sale: true,
-              listing_id: listingId,
-              listing_status: "active",
-            });
+    <ExpandedLayout
+      imageUrl={item.image_url}
+      imageAlt={item.name}
+      closeLabel="Close item"
+      fallbackPath="/wardrobe"
+      overlays={
+        <>
+          <Toast message={toastMessage} onClose={closeToast} />
+          {isListingItem && (
+            <CreateListingForm
+              clothingItem={item}
+              toggleForm={() => {
+                setIsListingItem(false);
+              }}
+              editError={setError}
+              onListingCreated={(description, listingId) => {
+                setItem({
+                  ...item,
+                  description,
+                  is_for_sale: true,
+                  listing_id: listingId,
+                  listing_status: "active",
+                });
+              }}
+            />
+          )}
+        </>
+      }
+      footer={
+        <ItemFooter
+          itemId={item.id}
+          canList={!item.listing_id && !item.is_for_sale}
+          onList={() => {
+            setIsListingItem(true);
           }}
         />
-      )}
-      <BlurredImage
-        src={item.image_url}
-        alt={item.name}
-        className="h-full w-2/3 shadow-xl"
+      }
+    >
+      <ItemHeader
+        name={item.name}
+        price={item.price}
+        badge={
+          item.listing_status
+            ? getListingStatusBadge(item.listing_status)
+            : undefined
+        }
       />
-      <div className="relative flex h-full w-1/3 flex-col gap-2">
-        <h1 className="text-2xl font-bold">{item.name}</h1>
-        <h2 className="font-semibold">Details</h2>
-        <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
-          <p>Brand: {item.brand}</p>
-          <p>Type: {item.type}</p>
-          <p>Color: {item.color}</p>
-          <p>Size: {item.size}</p>
-        </div>
 
-        <p className="">{item.description}</p>
+      <ActionRow>
+        <button
+          type="button"
+          onClick={() => {
+            navigate("/outfits/create-outfit", { state: { itemId: item.id } });
+          }}
+          className={primaryButtonClass}
+        >
+          Create Outfit
+        </button>
+        <SaveButton
+          noun="item"
+          isSaved={saved.isSaved}
+          isUpdating={saved.isUpdating}
+          onToggle={() => {
+            void saved.toggle();
+          }}
+        />
+        <ShareButton
+          noun="item"
+          onCopied={() => {
+            setToastMessage("Link copied to clipboard!");
+          }}
+          onError={() => {
+            setError("Unable to copy the link.");
+          }}
+        />
+      </ActionRow>
 
-        {item.price !== null && <p>${item.price}</p>}
+      {item.listing_id && item.listing_status ? (
+        <ListingStatusControl
+          listingId={item.listing_id}
+          status={item.listing_status}
+          onStatusChange={(status) => {
+            setItem({ ...item, listing_status: status });
+          }}
+          onError={setError}
+        />
+      ) : (
+        Boolean(item.is_for_sale) && (
+          <p className="mt-3 text-sm text-gray-500">Listed for sale</p>
+        )
+      )}
 
-        {item.listing_id && item.listing_status && (
-          <SelectField
-            label="Listing status"
-            className="mt-2 max-w-xs"
-            value={item.listing_status}
-            disabled={isSavingStatus}
-            onChange={(event) => {
-              void handleStatusChange(event.target.value as ListingStatus);
-            }}
-          >
-            {LISTING_STATUSES.map(({ value, label }) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </SelectField>
-        )}
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-        {error && <p className="text-red-600">{error}</p>}
+      <ItemDetails item={item} />
+      <RecentOutfitsSection outfits={recentOutfits} />
+      <SimilarItemsSection items={similarItems} />
 
-        <div className="absolute bottom-0 left-0 flex gap-4">
-          {item.listing_id ? null : item.is_for_sale ? (
-            <p className="text-sm">Item is Listed For Sale</p>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setIsListingItem(true);
-              }}
-              className="cursor-pointer text-sm underline"
-            >
-              List for Sale
-            </button>
-          )}
-          <button
-            type="button"
-            className="cursor-pointer text-sm underline"
-            onClick={() => {
-              navigate("/outfits/create-outfit", {
-                state: { itemId: item.id },
-              });
-            }}
-          >
-            Create Outfit
-          </button>
-          <button type="button" className="cursor-pointer text-sm underline">
-            Edit
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="cursor-pointer text-sm underline"
-          >
-            {isDeleting ? "Deleting..." : "Delete"}
-          </button>
-        </div>
-      </div>
-    </div>
+      {owner && (
+        <OwnerInfo
+          title="Owner information"
+          name={owner.username || owner.first_name || "User"}
+          avatarUrl={owner.avatar_url}
+          joinedAt={owner.created_at}
+          isYou
+        />
+      )}
+    </ExpandedLayout>
   );
 };

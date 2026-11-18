@@ -9,7 +9,7 @@ export function SortMenu<SortValue extends string>({
   options: readonly { value: SortValue; label: string }[];
   value: SortValue;
   onChange: (value: SortValue) => void;
-  /** Which side the panel opens from and any border, e.g. "right-0 border" */
+  /** Which side the panel opens from, e.g. "right-0" */
   panelClassName: string;
 }) {
   const [isOpen, setIsOpen] = useState<boolean>(false);

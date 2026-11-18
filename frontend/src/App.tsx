@@ -36,10 +36,6 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/wardrobe" element={<Wardrobe />} />
-                <Route
-                  path="/wardrobe/:id"
-                  element={<ClothingItemExpanded />}
-                />
                 <Route path="/profile" element={<Profile />}>
                   <Route path="outfits" element={<MyOutfits />} />
                   <Route path="transactions" element={<MyTransactions />} />
@@ -68,6 +64,7 @@ function App() {
             {/* full-screen pages, outside the header and footer */}
             <Route element={<ProtectedRoute />}>
               <Route path="/listings/:id" element={<ListingItemExpanded />} />
+              <Route path="/wardrobe/:id" element={<ClothingItemExpanded />} />
             </Route>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

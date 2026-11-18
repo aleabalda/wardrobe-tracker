@@ -3,6 +3,13 @@ import { pool } from "../db/pool";
 import { verifyToken } from "../middleware/auth";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 
+// is_saved is worked out in the query, so MySQL returns it as a 0/1 number
+// rather than a TINYINT(1) the pool's typeCast would turn into a boolean
+const withSavedFlag = (row: RowDataPacket) => ({
+  ...row,
+  is_saved: Boolean(row.is_saved),
+});
+
 const router = Router();
 
 const LISTING_STATUSES = ["active", "cancelled", "sold", "pending"];
@@ -121,7 +128,7 @@ router.get("/get", verifyToken, async (req, res) => {
       [userId],
     );
     console.log("fetched listings");
-    res.status(200).json(rows);
+    res.status(200).json((rows as RowDataPacket[]).map(withSavedFlag));
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -235,7 +242,7 @@ router.get("/:id", verifyToken, async (req, res) => {
       return res.status(404).json({ message: "Listing not found." });
     }
 
-    return res.status(200).json(rows[0]);
+    return res.status(200).json(withSavedFlag(rows[0]));
   } catch (err) {
     console.error(err);
 

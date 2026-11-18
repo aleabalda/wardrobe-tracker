@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
@@ -7,7 +7,8 @@ const arrowClass =
 
 /**
  * The breadcrumb, count, heading and row of image cards at the top of a
- * browse page. The first option is the "show everything" one.
+ * browse page. The first option is the "show everything" one, unless
+ * `rootLabel` is given, in which case every option is a peer under it.
  */
 export function CategorySelector<Value extends string>({
   options,
@@ -16,19 +17,25 @@ export function CategorySelector<Value extends string>({
   count,
   allNoun,
   getHeading = (value) => value,
+  headingAction,
+  rootLabel,
 }: {
   options: readonly { value: Value; image: string }[];
   activeValue: Value;
   onSelect: (value: Value) => void;
-  /** How many results are in the active category */
-  count: number;
+  /** How many results are in the active category; null leaves it blank */
+  count: number | null;
   /** What everything is called next to the count, e.g. "Clothing" */
   allNoun: string;
   /** The big heading for the active category; defaults to its name */
   getHeading?: (value: Value) => string;
+  /** Shown on the heading's line, at the right, e.g. page-level tabs */
+  headingAction?: ReactNode;
+  /** Breadcrumb root when no option means "everything", e.g. "All Favourites" */
+  rootLabel?: string;
 }) {
-  const allValue = options[0].value;
-  const isAll = activeValue === allValue;
+  const allValue = rootLabel ?? options[0].value;
+  const isAll = rootLabel === undefined && activeValue === allValue;
   const rowRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
   const [canScrollRight, setCanScrollRight] = useState<boolean>(false);
@@ -68,10 +75,13 @@ export function CategorySelector<Value extends string>({
           {isAll ? allValue : `${allValue} — ${activeValue}`}
         </p>
         <p className="text-xs">
-          {isAll ? allNoun : activeValue} <sup>{count}</sup>
+          {isAll ? allNoun : activeValue} <sup>{count ?? ""}</sup>
         </p>
       </div>
-      <h2 className="text-5xl mb-8">{getHeading(activeValue)}</h2>
+      <div className="mb-8 flex flex-wrap items-baseline gap-4">
+        <h2 className="text-5xl">{getHeading(activeValue)}</h2>
+        {headingAction}
+      </div>
       <div className="group relative">
         {canScrollLeft && (
           <button

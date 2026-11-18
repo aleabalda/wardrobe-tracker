@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { CLOTHING_TYPES, type ClothingType } from "../types/clothingItemTypes";
 import { CategorySelector } from "./CategorySelector";
 
@@ -10,11 +11,14 @@ export const ClothingTypeSelector = ({
   activeType,
   onSelect,
   count,
+  headingAction,
 }: {
   activeType: ClothingType;
   onSelect: (type: ClothingType) => void;
   /** How many items are in the active type */
   count: number;
+  /** Shown on the heading's line, at the right */
+  headingAction?: ReactNode;
 }) => (
   <CategorySelector
     options={OPTIONS}
@@ -22,5 +26,6 @@ export const ClothingTypeSelector = ({
     onSelect={onSelect}
     count={count}
     allNoun="Clothing"
+    headingAction={headingAction}
   />
 );

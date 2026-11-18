@@ -121,7 +121,7 @@ export function ItemToolbar<SortValue extends string>({
         options={sortOptions}
         value={sortValue}
         onChange={onSortChange}
-        panelClassName="right-0 border border-black"
+        panelClassName="right-0"
       />
 
       <FilterDrawer

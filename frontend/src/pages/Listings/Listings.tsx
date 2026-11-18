@@ -41,8 +41,6 @@ export const Listings = () => {
     void fetchListings();
   }, []);
 
-  // shopping shows other users' listings that can still be bought, selling
-  // shows all of the user's own
   const typeListings = listings.filter(
     (item) =>
       (isShopping
@@ -63,6 +61,31 @@ export const Listings = () => {
         activeType={activeClothingType}
         onSelect={setActiveClothingType}
         count={typeListings.length}
+        headingAction={
+          <div className="flex items-baseline gap-2 text-sm">
+            <button
+              type="button"
+              aria-pressed={isShopping}
+              onClick={() => {
+                setIsShopping(true);
+              }}
+              className={`cursor-pointer ${isShopping ? "underline" : "hover:underline"}`}
+            >
+              Shop
+            </button>
+            <span aria-hidden="true">/</span>
+            <button
+              type="button"
+              aria-pressed={!isShopping}
+              onClick={() => {
+                setIsShopping(false);
+              }}
+              className={`cursor-pointer ${isShopping ? "hover:underline" : "underline"}`}
+            >
+              Sell
+            </button>
+          </div>
+        }
       />
       <ItemToolbar
         items={typeListings}
@@ -73,26 +96,14 @@ export const Listings = () => {
         sortValue={sortOption}
         onSortChange={setSortOption}
         action={
-          <>
+          !isShopping && (
             <button
               type="button"
-              aria-label={isShopping ? "Switch to Sell" : "Switch to Shop"}
-              onClick={() => {
-                setIsShopping((prev) => !prev);
-              }}
-              className="cursor-pointer border border-black bg-black px-2 py-1 text-xs text-white transition-colors hover:bg-white hover:text-black"
+              className="cursor-pointer px-2 py-1 text-xs bg-black text-white transition-colors hover:bg-white hover:text-black hover:outline hover:outline-black"
             >
-              {isShopping ? "Shop" : "Sell"}
+              Create Listing
             </button>
-            {!isShopping && (
-              <button
-                type="button"
-                className="cursor-pointer px-2 py-1 text-xs bg-black text-white transition-colors hover:bg-white hover:text-black hover:outline hover:outline-black"
-              >
-                Create Listing
-              </button>
-            )}
-          </>
+          )
         }
       />
       <div>

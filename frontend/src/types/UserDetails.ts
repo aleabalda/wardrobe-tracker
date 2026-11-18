@@ -6,4 +6,5 @@ export type UserDetails = {
   last_name: string;
   phone_number: string;
   avatar_url: string | null;
+  created_at: string;
 };
