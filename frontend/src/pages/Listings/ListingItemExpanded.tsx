@@ -11,6 +11,7 @@ import { useSavedToggle } from "../../components/expanded/useSavedToggle";
 import { ExpandedLayout } from "../../components/expanded/ExpandedLayout";
 import { ItemDetails, ItemHeader } from "../../components/expanded/ItemSummary";
 import { OwnerInfo } from "../../components/expanded/OwnerInfo";
+import { EditListingForm } from "../../components/expanded/edit/EditListingForm";
 import { Toast } from "../../components/ui/Toast";
 import type { ListingDetail } from "../../types/ListingItem";
 import { fetchListingById, updateListingSaved } from "../../api/listings";
@@ -33,6 +34,7 @@ export const ListingItemExpanded = () => {
   const [draft, setDraft] = useState<string>(DEFAULT_MESSAGE);
   const [isSending, setIsSending] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const saved = useSavedToggle((isSaved) => {
     if (!item) return Promise.resolve(isSaved);
     return updateListingSaved(item.id, isSaved);
@@ -120,9 +122,34 @@ export const ListingItemExpanded = () => {
       closeLabel="Close listing"
       closePath="/listings"
       overlays={<Toast message={toastMessage} onClose={closeToast} />}
+      panel={
+        isEditing && (
+          <EditListingForm
+            listing={item}
+            onClose={() => {
+              setIsEditing(false);
+            }}
+            onSaved={(updated) => {
+              setItem(updated);
+              setIsEditing(false);
+              setToastMessage("Changes saved");
+            }}
+          />
+        )
+      }
       footer={
-        // sellers can't message themselves about their own listing
-        !isOwnListing && (
+        // sellers can't message themselves about their own listing, so they
+        // get a way to the item in their wardrobe instead
+        isOwnListing ? (
+          <div className="border-t border-gray-200 p-5 text-sm">
+            <Link
+              to={`/wardrobe/${item.clothing_item_id}`}
+              className="underline"
+            >
+              View item in wardrobe
+            </Link>
+          </div>
+        ) : (
           <form
             onSubmit={(e) => {
               void handleSend(e);
@@ -169,12 +196,15 @@ export const ListingItemExpanded = () => {
 
       <ActionRow>
         {isOwnListing ? (
-          <Link
-            to={`/wardrobe/${item.clothing_item_id}`}
+          <button
+            type="button"
+            onClick={() => {
+              setIsEditing(true);
+            }}
             className={primaryButtonClass}
           >
-            Manage listing
-          </Link>
+            Edit listing
+          </button>
         ) : (
           <>
             <button

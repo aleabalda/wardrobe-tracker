@@ -2,6 +2,13 @@ import { Router } from "express";
 import { pool } from "../db/pool";
 import { verifyToken } from "../middleware/auth";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
+import {
+  DESCRIPTION_LIMIT,
+  ITEM_FIELD_LIMITS,
+  LISTING_STATUSES,
+  REQUIRED_ITEM_FIELDS,
+  readTextFields,
+} from "../utils/textFields";
 
 // is_saved is worked out in the query, so MySQL returns it as a 0/1 number
 // rather than a TINYINT(1) the pool's typeCast would turn into a boolean
@@ -12,8 +19,6 @@ const withSavedFlag = (row: RowDataPacket) => ({
 
 const router = Router();
 
-const LISTING_STATUSES = ["active", "cancelled", "sold", "pending"];
-
 router.post("/create", verifyToken, async (req, res) => {
   const connection = await pool.getConnection();
 
@@ -21,8 +26,7 @@ router.post("/create", verifyToken, async (req, res) => {
     await connection.beginTransaction();
 
     const userId = req.user!.id;
-    const { clothingItemId, price, status = "active", description } =
-      req.body;
+    const { clothingItemId, price, status = "active", description } = req.body;
 
     if (!clothingItemId || price == null) {
       return res.status(400).json({
@@ -50,32 +54,26 @@ router.post("/create", verifyToken, async (req, res) => {
     const [result] = await connection.query<ResultSetHeader>(
       `
       INSERT INTO listings
-        (clothing_item_id, seller_id, price, status)
-      VALUES (?, ?, ?, ?)
+        (clothing_item_id, seller_id, price, description, status)
+      VALUES (?, ?, ?, ?, ?)
       `,
-      [clothingItemId, userId, price, status],
+      [
+        clothingItemId,
+        userId,
+        price,
+        typeof description === "string" ? description.trim() || null : null,
+        status,
+      ],
     );
 
-    // only overwrite the item's description when the client sends one
-    if (description !== undefined) {
-      await connection.query(
-        `
-        UPDATE clothing_items
-        SET is_for_sale = 1, description = ?
-        WHERE id = ?
-        `,
-        [description.trim() || null, clothingItemId],
-      );
-    } else {
-      await connection.query(
-        `
-        UPDATE clothing_items
-        SET is_for_sale = 1
-        WHERE id = ?
-        `,
-        [clothingItemId],
-      );
-    }
+    await connection.query(
+      `
+      UPDATE clothing_items
+      SET is_for_sale = 1
+      WHERE id = ?
+      `,
+      [clothingItemId],
+    );
 
     await connection.commit();
 
@@ -112,7 +110,6 @@ router.get("/get", verifyToken, async (req, res) => {
       SELECT
         listings.*,
         clothing_items.name,
-        clothing_items.description,
         clothing_items.brand,
         clothing_items.type,
         clothing_items.color,
@@ -203,6 +200,36 @@ router.put("/saved/:id", verifyToken, async (req, res) => {
   }
 });
 
+// one listing with its item's details and seller, or null if there's none.
+// listings.description is the listing's own, separate from the item's
+const fetchListingDetail = async (listingId: number, userId: number) => {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `
+    SELECT
+      listings.*,
+      clothing_items.name,
+      clothing_items.brand,
+      clothing_items.type,
+      clothing_items.color,
+      clothing_items.size,
+      clothing_items.image_url,
+      saved.listing_id IS NOT NULL AS is_saved,
+      COALESCE(seller.username, seller.first_name, 'User') AS seller_name,
+      seller.avatar_url AS seller_avatar_url,
+      seller.created_at AS seller_joined_at
+    FROM listings
+    JOIN clothing_items ON listings.clothing_item_id = clothing_items.id
+    JOIN users seller ON seller.id = listings.seller_id
+    LEFT JOIN saved_listings saved
+      ON saved.listing_id = listings.id AND saved.user_id = ?
+    WHERE listings.id = ?
+    `,
+    [userId, listingId],
+  );
+
+  return rows.length > 0 ? withSavedFlag(rows[0]) : null;
+};
+
 // any logged in user can view a listing, not just the seller
 router.get("/:id", verifyToken, async (req, res) => {
   const userId = req.user!.id;
@@ -213,36 +240,13 @@ router.get("/:id", verifyToken, async (req, res) => {
   }
 
   try {
-    const [rows] = await pool.query<RowDataPacket[]>(
-      `
-      SELECT
-        listings.*,
-        clothing_items.name,
-        clothing_items.description,
-        clothing_items.brand,
-        clothing_items.type,
-        clothing_items.color,
-        clothing_items.size,
-        clothing_items.image_url,
-        saved.listing_id IS NOT NULL AS is_saved,
-        COALESCE(seller.username, seller.first_name, 'User') AS seller_name,
-        seller.avatar_url AS seller_avatar_url,
-        seller.created_at AS seller_joined_at
-      FROM listings
-      JOIN clothing_items ON listings.clothing_item_id = clothing_items.id
-      JOIN users seller ON seller.id = listings.seller_id
-      LEFT JOIN saved_listings saved
-        ON saved.listing_id = listings.id AND saved.user_id = ?
-      WHERE listings.id = ?
-      `,
-      [userId, listingId],
-    );
+    const listing = await fetchListingDetail(listingId, userId);
 
-    if (rows.length === 0) {
+    if (!listing) {
       return res.status(404).json({ message: "Listing not found." });
     }
 
-    return res.status(200).json(withSavedFlag(rows[0]));
+    return res.status(200).json(listing);
   } catch (err) {
     console.error(err);
 
@@ -252,41 +256,104 @@ router.get("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// only the seller can change a listing's status
-router.put("/:id/status", verifyToken, async (req, res) => {
+// highest price a DECIMAL(10,2) column holds
+const MAX_PRICE = 99999999.99;
+
+/**
+ * Only the seller can edit a listing. Name, brand, type, colour and size
+ * belong to the clothing item, so they change in the wardrobe too; price,
+ * status and description are the listing's own
+ */
+router.put("/:id", verifyToken, async (req, res) => {
   const userId = req.user!.id;
   const listingId = Number(req.params.id);
-  const { status } = req.body;
 
   if (!Number.isInteger(listingId) || listingId <= 0) {
     return res.status(400).json({ message: "Invalid listing id." });
+  }
+
+  const fields = readTextFields(
+    req.body,
+    { ...ITEM_FIELD_LIMITS, description: DESCRIPTION_LIMIT },
+    REQUIRED_ITEM_FIELDS,
+  );
+
+  if (fields.error !== undefined) {
+    return res.status(400).json({ message: fields.error });
+  }
+
+  const { values } = fields;
+  const { status } = req.body;
+  // accepts "12.5" as well as 12.5 since form values arrive as text
+  const price = Number(req.body.price);
+
+  if (
+    req.body.price === "" ||
+    req.body.price === null ||
+    !Number.isFinite(price) ||
+    price < 0 ||
+    price > MAX_PRICE
+  ) {
+    return res.status(400).json({ message: "Enter a valid price." });
   }
 
   if (!LISTING_STATUSES.includes(status)) {
     return res.status(400).json({ message: "Invalid listing status." });
   }
 
+  const connection = await pool.getConnection();
+
   try {
-    const [result] = await pool.query<ResultSetHeader>(
+    await connection.beginTransaction();
+
+    const [listingResult] = await connection.query<ResultSetHeader>(
       `
       UPDATE listings
-      SET status = ?
+      SET price = ?, status = ?, description = ?
       WHERE id = ? AND seller_id = ?
       `,
-      [status, listingId, userId],
+      [
+        Math.round(price * 100) / 100,
+        status,
+        values.description,
+        listingId,
+        userId,
+      ],
     );
 
-    if (result.affectedRows === 0) {
+    if (listingResult.affectedRows === 0) {
+      await connection.rollback();
       return res.status(404).json({ message: "Listing not found." });
     }
 
-    return res.status(200).json({ status });
+    await connection.query<ResultSetHeader>(
+      `
+      UPDATE clothing_items ci
+      JOIN listings l ON l.clothing_item_id = ci.id
+      SET ci.name = ?, ci.brand = ?, ci.type = ?, ci.color = ?, ci.size = ?
+      WHERE l.id = ? AND ci.user_id = ?
+      `,
+      [
+        values.name,
+        values.brand,
+        values.type,
+        values.color,
+        values.size,
+        listingId,
+        userId,
+      ],
+    );
+
+    await connection.commit();
+
+    return res.status(200).json(await fetchListingDetail(listingId, userId));
   } catch (err) {
+    await connection.rollback();
     console.error(err);
 
-    return res.status(500).json({
-      message: "Failed to update listing status.",
-    });
+    return res.status(500).json({ message: "Failed to update listing." });
+  } finally {
+    connection.release();
   }
 });
 

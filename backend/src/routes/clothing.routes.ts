@@ -3,6 +3,12 @@ import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { pool } from "../db/pool";
 import { verifyToken } from "../middleware/auth";
+import {
+  DESCRIPTION_LIMIT,
+  ITEM_FIELD_LIMITS,
+  REQUIRED_ITEM_FIELDS,
+  readTextFields,
+} from "../utils/textFields";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 
 const router = Router();
@@ -142,16 +148,9 @@ router.get("/get", verifyToken, async (req, res) => {
   }
 });
 
-router.get("/:id", verifyToken, async (req, res) => {
-  const userId = req.user?.id;
-  const itemId = req.params.id;
-  console.log(`Fetching clothing item with id: ${itemId} for user: ${userId}`);
-
-  if (!userId) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-
-  const [rows] = await pool.execute(
+// one of the user's items with its latest listing's id and status, or null
+const fetchOwnItem = async (itemId: string | number, userId: number) => {
+  const [rows] = await pool.execute<RowDataPacket[]>(
     `
     SELECT
       ci.*,
@@ -168,13 +167,85 @@ router.get("/:id", verifyToken, async (req, res) => {
     [itemId, userId],
   );
 
-  const items = rows as any[];
+  return rows[0] ?? null;
+};
 
-  if (items.length === 0) {
+router.get("/:id", verifyToken, async (req, res) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const item = await fetchOwnItem(String(req.params.id), userId);
+
+  if (!item) {
     return res.status(404).json({ message: "Item not found" });
   }
 
-  res.json(items[0]);
+  res.json(item);
+});
+
+// edits an item's details; a listed item's status is edited via its listing
+router.put("/:id", verifyToken, async (req, res) => {
+  const userId = req.user!.id;
+  const itemId = Number(req.params.id);
+
+  if (!Number.isInteger(itemId) || itemId <= 0) {
+    return res.status(400).json({ message: "Invalid item id." });
+  }
+
+  const fields = readTextFields(
+    req.body,
+    { ...ITEM_FIELD_LIMITS, description: DESCRIPTION_LIMIT },
+    REQUIRED_ITEM_FIELDS,
+  );
+
+  if (fields.error !== undefined) {
+    return res.status(400).json({ message: fields.error });
+  }
+
+  const { values } = fields;
+
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [result] = await connection.query<ResultSetHeader>(
+      `
+      UPDATE clothing_items
+      SET name = ?, brand = ?, type = ?, color = ?, size = ?, description = ?
+      WHERE id = ? AND user_id = ?
+      `,
+      [
+        values.name,
+        values.brand,
+        values.type,
+        values.color,
+        values.size,
+        values.description,
+        itemId,
+        userId,
+      ],
+    );
+
+    if (result.affectedRows === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Item not found." });
+    }
+
+    await connection.commit();
+
+    return res.status(200).json(await fetchOwnItem(itemId, userId));
+  } catch (err) {
+    await connection.rollback();
+    console.error(err);
+
+    return res.status(500).json({ message: "Failed to update item." });
+  } finally {
+    connection.release();
+  }
 });
 
 interface ClothingItemRow extends RowDataPacket {

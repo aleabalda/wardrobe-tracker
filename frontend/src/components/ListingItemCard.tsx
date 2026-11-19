@@ -14,10 +14,6 @@ export const ListingItemCard = ({ item }: { item: ListingItem }) => {
   const [isUpdatingSaved, setIsUpdatingSaved] = useState(false);
   const statusBadge = getListingStatusBadge(item.status);
   const isOwnListing = item.seller_id === auth.userId;
-  // sellers manage their own item; everyone else gets the read-only listing
-  const detailsPath = isOwnListing
-    ? `/wardrobe/${item.clothing_item_id}`
-    : `/listings/${item.id}`;
 
   const handleSave = async () => {
     if (isUpdatingSaved) return;
@@ -41,7 +37,7 @@ export const ListingItemCard = ({ item }: { item: ListingItem }) => {
   return (
     <div className="mb-10">
       <Link
-        to={detailsPath}
+        to={`/listings/${item.id}`}
         aria-label={`View details for ${item.name}`}
         className="group block overflow-hidden border border-transparent p-0.5 transition-colors hover:border-black focus-visible:border-black"
       >

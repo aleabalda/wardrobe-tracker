@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import type { ClothingItem } from "../types/ClothingItems";
-import { CLOTHING_TYPES, type ClothingType } from "../types/clothingItemTypes";
+import {
+  ITEM_CLOTHING_TYPES,
+  type ItemClothingType,
+} from "../types/clothingItemTypes";
 import {
   FileField,
   SelectField,
@@ -9,13 +12,6 @@ import {
   TextAreaField,
   TextField,
 } from "./ui/FormField";
-
-type ItemClothingType = Exclude<ClothingType, "All Clothing">;
-
-// "All Clothing" is a filter option, not a type an item can have
-const ITEM_CLOTHING_TYPES = CLOTHING_TYPES.map(({ type }) => type).filter(
-  (val): val is ItemClothingType => val !== "All Clothing",
-);
 
 export const AddItemForm = ({
   onClose,
@@ -173,12 +169,19 @@ export const AddItemForm = ({
               fileName={imageFile?.name}
               className="col-span-2"
               accept="image/png, image/jpeg"
+              aria-describedby="add-item-image-note"
               onChange={(e) => {
                 if (e.target.files?.[0]) {
                   setImageFile(e.target.files[0]);
                 }
               }}
             />
+            <p
+              id="add-item-image-note"
+              className="col-span-2 -mt-1.5 text-xs text-gray-500"
+            >
+              You can add more photos of this item later from its page.
+            </p>
             <TextAreaField
               label="Description"
               hint="Describe the item"

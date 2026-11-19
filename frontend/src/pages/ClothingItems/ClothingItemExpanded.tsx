@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { CreateListingForm } from "../../components/CreateListingForm";
+import { CreateListingForm } from "../../components/expanded/edit/CreateListingForm";
+import { DeleteItemForm } from "../../components/expanded/edit/DeleteItemForm";
+import { EditItemForm } from "../../components/expanded/edit/EditItemForm";
 import {
   ActionRow,
   SaveButton,
@@ -18,7 +20,7 @@ import type { UserDetails } from "../../types/UserDetails";
 import type { ClothingItem } from "../../types/ClothingItems";
 import { getListingStatusBadge } from "../../utils/listingStatus";
 import { ItemFooter } from "./expanded/ItemFooter";
-import { ListingStatusControl } from "./expanded/ListingStatusControl";
+import { ListingSummary } from "./expanded/ListingSummary";
 import {
   RecentOutfitsSection,
   SimilarItemsSection,
@@ -32,7 +34,13 @@ export const ClothingItemExpanded = () => {
   const [item, setItem] = useState<ClothingItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [isListingItem, setIsListingItem] = useState<boolean>(false);
+  // which form, if any, has taken over the side panel
+  const [panelMode, setPanelMode] = useState<"edit" | "list" | "delete" | null>(
+    null,
+  );
+  const closePanel = () => {
+    setPanelMode(null);
+  };
   const [owner, setOwner] = useState<UserDetails | null>(null);
   const { recentOutfits, similarItems } = useRelatedItems(item);
   const saved = useSavedToggle((isSaved) => {
@@ -95,32 +103,49 @@ export const ClothingItemExpanded = () => {
       overlays={
         <>
           <Toast message={toastMessage} onClose={closeToast} />
-          {isListingItem && (
-            <CreateListingForm
-              clothingItem={item}
-              toggleForm={() => {
-                setIsListingItem(false);
-              }}
-              editError={setError}
-              onListingCreated={(description, listingId) => {
-                setItem({
-                  ...item,
-                  description,
-                  is_for_sale: true,
-                  listing_id: listingId,
-                  listing_status: "active",
-                });
-              }}
-            />
-          )}
         </>
+      }
+      panel={
+        panelMode === "edit" ? (
+          <EditItemForm
+            item={item}
+            onClose={closePanel}
+            onSaved={(updated) => {
+              setItem(updated);
+              closePanel();
+              setToastMessage("Changes saved");
+            }}
+          />
+        ) : panelMode === "list" ? (
+          <CreateListingForm
+            item={item}
+            onClose={closePanel}
+            onCreated={(listingId) => {
+              setItem({
+                ...item,
+                is_for_sale: true,
+                listing_id: listingId,
+                listing_status: "active",
+              });
+              closePanel();
+              setToastMessage("Item listed for sale");
+            }}
+          />
+        ) : panelMode === "delete" ? (
+          <DeleteItemForm item={item} onClose={closePanel} />
+        ) : undefined
       }
       footer={
         <ItemFooter
-          itemId={item.id}
           canList={!item.listing_id && !item.is_for_sale}
           onList={() => {
-            setIsListingItem(true);
+            setPanelMode("list");
+          }}
+          onEdit={() => {
+            setPanelMode("edit");
+          }}
+          onDelete={() => {
+            setPanelMode("delete");
           }}
         />
       }
@@ -164,24 +189,21 @@ export const ClothingItemExpanded = () => {
         />
       </ActionRow>
 
-      {item.listing_id && item.listing_status ? (
-        <ListingStatusControl
-          listingId={item.listing_id}
-          status={item.listing_status}
-          onStatusChange={(status) => {
-            setItem({ ...item, listing_status: status });
-          }}
-          onError={setError}
-        />
-      ) : (
-        Boolean(item.is_for_sale) && (
-          <p className="mt-3 text-sm text-gray-500">Listed for sale</p>
-        )
-      )}
-
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       <ItemDetails item={item} />
+
+      {item.listing_id && item.listing_status ? (
+        <ListingSummary
+          listingId={item.listing_id}
+          status={item.listing_status}
+        />
+      ) : (
+        Boolean(item.is_for_sale) && (
+          <p className="mt-6 text-sm text-gray-500">Listed for sale</p>
+        )
+      )}
+
       <RecentOutfitsSection outfits={recentOutfits} />
       <SimilarItemsSection items={similarItems} />
 

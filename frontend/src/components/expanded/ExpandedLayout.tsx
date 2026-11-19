@@ -19,6 +19,7 @@ export const ExpandedLayout = ({
   closePath,
   overlays,
   footer,
+  panel,
   children,
 }: {
   imageUrl: string;
@@ -31,6 +32,8 @@ export const ExpandedLayout = ({
   overlays?: ReactNode;
   /** Pinned below the scrolling panel content */
   footer?: ReactNode;
+  /** Replaces the whole side panel, e.g. with an edit form */
+  panel?: ReactNode;
   children: ReactNode;
 }) => {
   const navigate = useNavigate();
@@ -77,10 +80,16 @@ export const ExpandedLayout = ({
       </div>
 
       <aside className="flex min-h-0 w-full flex-1 flex-col md:w-96 md:flex-none md:shrink-0 lg:w-md">
-        <div className="flex flex-1 flex-col overflow-y-auto p-5">
-          {children}
-        </div>
-        {footer}
+        {panel ? (
+          panel
+        ) : (
+          <>
+            <div className="flex flex-1 flex-col overflow-y-auto p-5">
+              {children}
+            </div>
+            {footer}
+          </>
+        )}
       </aside>
     </div>
   );

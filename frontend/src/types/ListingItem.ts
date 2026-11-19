@@ -3,7 +3,8 @@ import type { ListingStatus } from "../utils/listingStatus";
 export type ListingItem = {
   id: number;
   name: string;
-  description: string;
+  // the listing's own, separate from its clothing item's description
+  description: string | null;
   brand: string;
   type: string;
   color: string;

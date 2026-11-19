@@ -25,3 +25,10 @@ export const CLOTHING_TYPES = [
 ] as const satisfies readonly { type: string; image: string }[];
 
 export type ClothingType = (typeof CLOTHING_TYPES)[number]["type"];
+
+export type ItemClothingType = Exclude<ClothingType, "All Clothing">;
+
+// "All Clothing" is a filter option, not a type an item can have
+export const ITEM_CLOTHING_TYPES = CLOTHING_TYPES.map(
+  ({ type }) => type,
+).filter((val): val is ItemClothingType => val !== "All Clothing");

@@ -78,3 +78,27 @@ export const updateFavourite = async (
 
   return data.is_favourite;
 };
+
+export type ClothingItemUpdate = Pick<
+  ClothingItem,
+  "name" | "brand" | "type" | "color" | "size" | "description"
+>;
+
+export const updateClothingItem = async (
+  id: number,
+  update: ClothingItemUpdate,
+): Promise<ClothingItem> => {
+  const response = await fetch(`${API_BASE_URL}/${id}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(update),
+  });
+
+  if (!response.ok) {
+    const data: { message?: string } = await response.json().catch(() => ({}));
+    throw new Error(data.message ?? "Failed to update clothing item.");
+  }
+
+  return response.json() as Promise<ClothingItem>;
+};

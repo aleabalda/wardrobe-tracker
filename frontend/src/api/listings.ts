@@ -24,7 +24,8 @@ export const createListing = async (
   });
 
   if (!res.ok) {
-    throw new Error("Failed to create listing");
+    const data: { message?: string } = await res.json().catch(() => ({}));
+    throw new Error(data.message ?? "Failed to create listing.");
   }
 
   return res.json();
@@ -70,24 +71,6 @@ export const updateListingSaved = async (
   return data.is_saved;
 };
 
-export const updateListingStatus = async (
-  id: number,
-  status: ListingStatus,
-): Promise<void> => {
-  const res = await fetch(`${API_BASE_URL}/${id}/status`, {
-    method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ status }),
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to update listing status");
-  }
-};
-
 export const fetchListingById = async (id: string): Promise<ListingDetail> => {
   const res = await fetch(`${API_BASE_URL}/${id}`, {
     method: "GET",
@@ -95,9 +78,38 @@ export const fetchListingById = async (id: string): Promise<ListingDetail> => {
   });
 
   if (!res.ok) {
-    throw new Error(
-      `Failed to fetch listing: ${res.status} ${res.statusText}`,
-    );
+    throw new Error(`Failed to fetch listing: ${res.status} ${res.statusText}`);
+  }
+
+  return res.json() as Promise<ListingDetail>;
+};
+
+export type ListingUpdate = {
+  name: string;
+  brand: string;
+  type: string;
+  size: string;
+  color: string;
+  price: number;
+  status: ListingStatus;
+  description: string;
+};
+
+/** Seller only; the item fields change the clothing item in the wardrobe too */
+export const updateListing = async (
+  id: number,
+  update: ListingUpdate,
+): Promise<ListingDetail> => {
+  const res = await fetch(`${API_BASE_URL}/${id}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(update),
+  });
+
+  if (!res.ok) {
+    const data: { message?: string } = await res.json().catch(() => ({}));
+    throw new Error(data.message ?? "Failed to update listing.");
   }
 
   return res.json() as Promise<ListingDetail>;
