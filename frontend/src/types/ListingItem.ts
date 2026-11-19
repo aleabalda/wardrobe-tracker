@@ -24,4 +24,6 @@ export type ListingDetail = ListingItem & {
   seller_name: string;
   seller_avatar_url: string | null;
   seller_joined_at: string;
+  // only sent to the seller: when the item left their wardrobe, if it has
+  item_archived_at: string | null;
 };

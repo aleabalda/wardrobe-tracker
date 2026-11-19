@@ -36,7 +36,7 @@ router.post("/create", verifyToken, async (req, res) => {
 
     const [rows] = await connection.query<RowDataPacket[]>(
       `
-      SELECT id
+      SELECT id, archived_at
       FROM clothing_items
       WHERE id = ? AND user_id = ?
       `,
@@ -48,6 +48,14 @@ router.post("/create", verifyToken, async (req, res) => {
 
       return res.status(403).json({
         message: "You do not own this clothing item.",
+      });
+    }
+
+    if (rows[0].archived_at !== null) {
+      await connection.rollback();
+
+      return res.status(409).json({
+        message: "Restore this item to your wardrobe before listing it.",
       });
     }
 
@@ -213,6 +221,9 @@ const fetchListingDetail = async (listingId: number, userId: number) => {
       clothing_items.color,
       clothing_items.size,
       clothing_items.image_url,
+      -- only the seller needs to know the item has left their wardrobe
+      IF(listings.seller_id = ?, clothing_items.archived_at, NULL)
+        AS item_archived_at,
       saved.listing_id IS NOT NULL AS is_saved,
       COALESCE(seller.username, seller.first_name, 'User') AS seller_name,
       seller.avatar_url AS seller_avatar_url,
@@ -224,7 +235,7 @@ const fetchListingDetail = async (listingId: number, userId: number) => {
       ON saved.listing_id = listings.id AND saved.user_id = ?
     WHERE listings.id = ?
     `,
-    [userId, listingId],
+    [userId, userId, listingId],
   );
 
   return rows.length > 0 ? withSavedFlag(rows[0]) : null;
@@ -305,6 +316,27 @@ router.put("/:id", verifyToken, async (req, res) => {
 
   try {
     await connection.beginTransaction();
+
+    // a past item can't go back up for sale until it's restored
+    if (status === "active" || status === "pending") {
+      const [itemRows] = await connection.query<RowDataPacket[]>(
+        `
+        SELECT ci.archived_at
+        FROM listings l
+        JOIN clothing_items ci ON ci.id = l.clothing_item_id
+        WHERE l.id = ? AND l.seller_id = ?
+        `,
+        [listingId, userId],
+      );
+
+      if (itemRows[0]?.archived_at) {
+        await connection.rollback();
+        return res.status(409).json({
+          message:
+            "This item is no longer in your wardrobe. Restore it to put it back up for sale.",
+        });
+      }
+    }
 
     const [listingResult] = await connection.query<ResultSetHeader>(
       `

@@ -59,7 +59,7 @@ router.post("/create", verifyToken, async (req, res) => {
       `
       SELECT id
       FROM clothing_items
-      WHERE user_id = ? AND id IN (?)
+      WHERE user_id = ? AND id IN (?) AND archived_at IS NULL
       `,
       [userId, itemIds],
     );
@@ -68,7 +68,8 @@ router.post("/create", verifyToken, async (req, res) => {
       await connection.rollback();
 
       return res.status(403).json({
-        message: "You can only add your own clothing items to an outfit.",
+        message:
+          "You can only add items that are currently in your wardrobe to an outfit.",
       });
     }
 

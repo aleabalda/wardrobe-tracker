@@ -1,20 +1,18 @@
+import {
+  Card,
+  CardBadge,
+  CardBody,
+  CardBookmark,
+  CardDetail,
+  CardImage,
+  CardPhoto,
+} from "./CardParts";
 import type { ClothingItem } from "../types/ClothingItems";
-import { Link } from "react-router-dom";
-import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-import BookmarkIcon from "@mui/icons-material/Bookmark";
-import IconButton from "@mui/material/IconButton";
 import { useState } from "react";
 import { updateFavourite } from "../api/wardrobe";
-import { CardDeleteButton } from "./CardDeleteButton";
+import { getArchiveLabel } from "../utils/archiveReasons";
 
-export const ClothingItemCard = ({
-  item,
-  onDelete,
-}: {
-  item: ClothingItem;
-  /** Shows a delete button on the card image when provided */
-  onDelete?: () => void;
-}) => {
+export const ClothingItemCard = ({ item }: { item: ClothingItem }) => {
   const [isFavourite, setIsFavourite] = useState(item.is_favourite);
   const [isUpdatingFavourite, setIsUpdatingFavourite] = useState(false);
 
@@ -39,52 +37,41 @@ export const ClothingItemCard = ({
   };
 
   return (
-    <div className="mb-10">
-      <div className="group relative border border-transparent p-0.5 transition-colors hover:border-black has-focus-visible:border-black">
-        <Link
-          to={`/wardrobe/${item.id}`}
-          aria-label={`View details for ${item.name}`}
-          className="block overflow-hidden"
-        >
-          <img
-            src={item.image_url}
-            alt={item.name}
-            className="block w-full aspect-11/15 object-cover"
-          />
-        </Link>
-        {onDelete && (
-          <CardDeleteButton label={`Delete ${item.name}`} onClick={onDelete} />
-        )}
-      </div>
-      <div className="px-2 pt-3 text-sm">
-        <div className="flex items-start justify-between gap-2">
-          <h2 className="min-w-0">{item.name}</h2>
-          <IconButton
-            size="small"
-            edge="end"
+    <Card>
+      <CardImage
+        to={`/wardrobe/${item.id}`}
+        label={`View details for ${item.name}`}
+        badge={
+          // e.g. "Donated", so outfits show what's no longer in the wardrobe
+          item.archived_at && (
+            <CardBadge>{getArchiveLabel(item.archive_reason)}</CardBadge>
+          )
+        }
+      >
+        <CardPhoto src={item.image_url} alt={item.name} />
+      </CardImage>
+      <CardBody
+        title={item.name}
+        aside={
+          <CardBookmark
+            isOn={isFavourite}
             disabled={isUpdatingFavourite}
-            aria-label={
-              isFavourite ? "Remove from favourites" : "Add to favourites"
+            label={
+              isFavourite
+                ? `Remove ${item.name} from favourites`
+                : `Add ${item.name} to favourites`
             }
-            onClick={() => {
-              handleFavourite();
+            onToggle={() => {
+              void handleFavourite();
             }}
-            sx={{ color: "inherit", marginTop: "-5px" }}
-          >
-            {isFavourite ? (
-              <BookmarkIcon fontSize="small" />
-            ) : (
-              <BookmarkBorderIcon fontSize="small" />
-            )}
-          </IconButton>
-        </div>
-        <p className="mt-1 text-gray-600 text-xs">
+          />
+        }
+      >
+        <CardDetail>
           {[item.brand, `Size ${item.size}`].filter(Boolean).join(" | ")}
-        </p>
-        {item.color && (
-          <p className="mt-1 text-gray-600 text-xs">{item.color}</p>
-        )}
-      </div>
-    </div>
+        </CardDetail>
+        {item.color && <CardDetail>{item.color}</CardDetail>}
+      </CardBody>
+    </Card>
   );
 };

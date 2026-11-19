@@ -263,8 +263,7 @@ export const OutfitExpanded = () => {
         <div className="min-w-0 flex-1 lg:overflow-y-auto lg:pr-2">
           {categories.length === 0 ? (
             <p className="text-sm text-gray-500">
-              This outfit has no items. They may have been removed from your
-              wardrobe.
+              This outfit has no items. They may have been deleted.
             </p>
           ) : (
             categories.map(({ category, items }) => (

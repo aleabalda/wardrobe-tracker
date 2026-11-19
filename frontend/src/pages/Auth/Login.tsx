@@ -56,7 +56,11 @@ export const Login = () => {
           {loading ? "Logging in..." : "Log in"}
         </SubmitButton>
         {error && <p className="text-red-600 text-sm">{error}</p>}
-        <Link to="/register" state={location.state} className="w-fit text-sm underline">
+        <Link
+          to="/register"
+          state={location.state}
+          className="w-fit text-sm underline"
+        >
           Don't have an account? Register here.
         </Link>
       </form>

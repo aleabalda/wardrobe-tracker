@@ -1,8 +1,13 @@
+import {
+  Card,
+  CardBadge,
+  CardBody,
+  CardBookmark,
+  CardDetail,
+  CardImage,
+  CardPhoto,
+} from "./CardParts";
 import type { ListingItem } from "../types/ListingItem";
-import { Link } from "react-router-dom";
-import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-import BookmarkIcon from "@mui/icons-material/Bookmark";
-import IconButton from "@mui/material/IconButton";
 import { useState } from "react";
 import { updateListingSaved } from "../api/listings";
 import { useAuth } from "../context/AuthContext";
@@ -35,54 +40,42 @@ export const ListingItemCard = ({ item }: { item: ListingItem }) => {
   };
 
   return (
-    <div className="mb-10">
-      <Link
+    <Card>
+      <CardImage
         to={`/listings/${item.id}`}
-        aria-label={`View details for ${item.name}`}
-        className="group block overflow-hidden border border-transparent p-0.5 transition-colors hover:border-black focus-visible:border-black"
+        label={`View details for ${item.name}`}
+        badge={statusBadge && <CardBadge>{statusBadge}</CardBadge>}
       >
-        <img
-          src={item.image_url}
-          alt={item.name}
-          className="block w-full aspect-11/15 object-cover"
-        />
-      </Link>
-      <div className="px-2 pt-3 text-sm">
-        <div className="flex items-start justify-between gap-2">
-          <p className="min-w-0">{item.name}</p>
-          <div className="flex shrink-0 items-start gap-1">
+        <CardPhoto src={item.image_url} alt={item.name} />
+      </CardImage>
+      <CardBody
+        title={item.name}
+        aside={
+          <>
             {item.price != null && <p>${item.price}</p>}
             {/* sellers can't save their own listing */}
             {!isOwnListing && (
-              <IconButton
-                size="small"
-                edge="end"
+              <CardBookmark
+                isOn={isSaved}
                 disabled={isUpdatingSaved}
-                aria-label={
+                label={
                   isSaved
                     ? `Remove ${item.name} from saved listings`
                     : `Save ${item.name}`
                 }
-                onClick={() => {
+                onToggle={() => {
                   void handleSave();
                 }}
-                sx={{ color: "inherit", marginTop: "-5px" }}
-              >
-                {isSaved ? (
-                  <BookmarkIcon fontSize="small" />
-                ) : (
-                  <BookmarkBorderIcon fontSize="small" />
-                )}
-              </IconButton>
+              />
             )}
-          </div>
-        </div>
-        <p className="mt-1 text-gray-600">
+          </>
+        }
+      >
+        <CardDetail>
           {[item.brand, `Size ${item.size}`].filter(Boolean).join(" | ")}
-        </p>
-        {item.color && <p className="mt-1 text-gray-600">{item.color}</p>}
-        {statusBadge && <p className="mt-1">{statusBadge}</p>}
-      </div>
-    </div>
+        </CardDetail>
+        {item.color && <CardDetail>{item.color}</CardDetail>}
+      </CardBody>
+    </Card>
   );
 };

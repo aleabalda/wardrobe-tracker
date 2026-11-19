@@ -1,3 +1,4 @@
+import type { ArchiveReason } from "../utils/archiveReasons";
 import type { ListingStatus } from "../utils/listingStatus";
 
 export type ClothingItem = {
@@ -15,4 +16,10 @@ export type ClothingItem = {
   // only sent when fetching a single item; null if it was never listed
   listing_id?: number | null;
   listing_status?: ListingStatus | null;
+  // set once the item has left the wardrobe (a "past item"); it still shows
+  // in the outfits it was part of
+  archived_at: string | null;
+  archive_reason: ArchiveReason | null;
+  // only sent when fetching a single item
+  outfit_count?: number;
 };

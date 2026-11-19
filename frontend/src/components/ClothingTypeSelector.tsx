@@ -16,7 +16,8 @@ export const ClothingTypeSelector = ({
   activeType: ClothingType;
   onSelect: (type: ClothingType) => void;
   /** How many items are in the active type */
-  count: number;
+  /** null while loading */
+  count: number | null;
   /** Shown on the heading's line, at the right */
   headingAction?: ReactNode;
 }) => (

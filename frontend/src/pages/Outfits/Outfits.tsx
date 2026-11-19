@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { deleteOutfit, fetchOutfits } from "../../api/outfits";
+import { fetchOutfits } from "../../api/outfits";
 import type { Outfit } from "../../types/Outfit";
 import { OutfitCard } from "../../components/OutfitCard";
 import { ItemToolbar } from "../../components/ItemToolbar";
-import { DeleteDialog } from "../../components/DeleteDialog";
 import {
   EMPTY_FILTERS,
   OUTFIT_ITEM_FILTER_FIELDS,
@@ -30,10 +29,6 @@ export const Outfits = () => {
   const [outfits, setOutfits] = useState<Outfit[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  // the outfit awaiting delete confirmation, and the one being deleted
-  const [confirmingId, setConfirmingId] = useState<number | null>(null);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   // the expanded view passes a message along after deleting an outfit
   const [toastMessage, setToastMessage] = useState<string | null>(
     location.state?.toastMessage ?? null,
@@ -64,22 +59,6 @@ export const Outfits = () => {
 
     void loadOutfits();
   }, []);
-
-  const handleDelete = async (id: number) => {
-    setDeletingId(id);
-    setDeleteError(null);
-    try {
-      await deleteOutfit(id);
-      setOutfits(outfits.filter((outfit) => outfit.id !== id));
-      setConfirmingId(null);
-      setToastMessage("Outfit was deleted successfully!");
-    } catch (error) {
-      console.error("Unable to delete outfit:", error);
-      setDeleteError("Unable to delete outfit.");
-    } finally {
-      setDeletingId(null);
-    }
-  };
 
   // stable so the toast's auto-dismiss timer isn't reset on every render
   const closeToast = useCallback(() => {
@@ -148,30 +127,9 @@ export const Outfits = () => {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-2 mt-4">
           {filteredOutfits.map((outfit) => (
-            <OutfitCard
-              key={outfit.id}
-              outfit={outfit}
-              onDelete={() => {
-                setConfirmingId(outfit.id);
-                setDeleteError(null);
-              }}
-            />
+            <OutfitCard key={outfit.id} outfit={outfit} />
           ))}
         </div>
-      )}
-
-      {confirmingId !== null && (
-        <DeleteDialog
-          noun="outfit"
-          isDeleting={deletingId !== null}
-          error={deleteError}
-          onConfirm={() => {
-            void handleDelete(confirmingId);
-          }}
-          onCancel={() => {
-            setConfirmingId(null);
-          }}
-        />
       )}
     </div>
   );

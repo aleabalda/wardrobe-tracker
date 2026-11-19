@@ -13,6 +13,7 @@ export const PanelForm = ({
   onCancel,
   submitLabel = "Save Changes",
   submittingLabel = "Saving...",
+  cancelLabel = "Cancel",
   isDanger = false,
   children,
 }: {
@@ -21,6 +22,8 @@ export const PanelForm = ({
   submitLabel?: string;
   /** The button's text while submitting, e.g. "Deleting..." */
   submittingLabel?: string;
+  /** e.g. "Keep in Wardrobe" when cancelling is a choice in itself */
+  cancelLabel?: string;
   /** Red button for something that can't be undone, like deleting */
   isDanger?: boolean;
   /** False while a required field is blank */
@@ -96,7 +99,7 @@ export const PanelForm = ({
           disabled={isSaving}
           className="cursor-pointer text-sm underline disabled:cursor-not-allowed"
         >
-          Cancel
+          {cancelLabel}
         </button>
       </div>
     </form>

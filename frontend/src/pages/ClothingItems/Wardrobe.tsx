@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "motion/react";
+import { useSearchParams } from "react-router-dom";
 import { AddItemForm } from "../../components/AddItemForm";
 import { ClothingItemCard } from "../../components/ClothingItemCard";
 import { ClothingTypeSelector } from "../../components/ClothingTypeSelector";
-import { deleteClothingItem, fetchClothingItems } from "../../api/wardrobe";
-import { DeleteDialog } from "../../components/DeleteDialog";
-import { Toast } from "../../components/ui/Toast";
+import { fetchClothingItems } from "../../api/wardrobe";
 import type { ClothingItem } from "../../types/ClothingItems";
 import type { ClothingType } from "../../types/clothingItemTypes";
 import { ItemToolbar } from "../../components/ItemToolbar";
@@ -13,6 +12,7 @@ import {
   EMPTY_FILTERS,
   countActiveFilters,
   matchesFilters,
+  matchesSearch,
   type ItemFilters,
 } from "../../utils/itemFilters";
 import {
@@ -29,45 +29,38 @@ export const Wardrobe = () => {
     useState<ClothingType>("All Clothing");
   const [sortOption, setSortOption] = useState<ItemSortOption>("newest");
   const [filters, setFilters] = useState<ItemFilters>(EMPTY_FILTERS);
-  // the item awaiting delete confirmation, and whether it's being deleted
-  const [confirmingId, setConfirmingId] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [search, setSearch] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // past items are ones the user no longer owns; kept in the URL so closing a
+  // past item's page comes back to this view
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isPast = searchParams.get("view") === "past";
 
   useEffect(() => {
+    // ignores a slow response that arrives after switching views
+    let isCurrent = true;
+    setIsLoading(true);
+
     const fetchItems = async () => {
       try {
-        const items = await fetchClothingItems();
-        setClothingItems(items);
+        const items = await fetchClothingItems({ archived: isPast });
+        if (isCurrent) setClothingItems(items);
       } catch (error) {
         console.error("Unable to load clothing items:", error);
+      } finally {
+        if (isCurrent) setIsLoading(false);
       }
     };
 
     void fetchItems();
-  }, []);
+    return () => {
+      isCurrent = false;
+    };
+  }, [isPast]);
 
-  const handleDelete = async (id: number) => {
-    setIsDeleting(true);
-    setDeleteError(null);
-    try {
-      await deleteClothingItem(String(id));
-      setClothingItems((items) => items.filter((item) => item.id !== id));
-      setConfirmingId(null);
-      setToastMessage("Item was deleted successfully!");
-    } catch (error) {
-      console.error("Unable to delete clothing item:", error);
-      setDeleteError("Unable to delete clothing item.");
-    } finally {
-      setIsDeleting(false);
-    }
+  const showView = (past: boolean) => {
+    setSearchParams(past ? { view: "past" } : {});
   };
-
-  // stable so the toast's auto-dismiss timer isn't reset on every render
-  const closeToast = useCallback(() => {
-    setToastMessage(null);
-  }, []);
 
   const typeItems = clothingItems.filter(
     (item) =>
@@ -75,16 +68,42 @@ export const Wardrobe = () => {
   );
 
   const filteredItems = typeItems
-    .filter((item) => matchesFilters(item, filters))
+    .filter(
+      (item) => matchesFilters(item, filters) && matchesSearch(item, search),
+    )
     .sort((a, b) => compareItems(a, b, sortOption));
 
   return (
     <div className="p-12 pt-6">
-      <Toast message={toastMessage} onClose={closeToast} />
       <ClothingTypeSelector
         activeType={activeClothingType}
         onSelect={setActiveClothingType}
-        count={typeItems.length}
+        count={isLoading ? null : typeItems.length}
+        headingAction={
+          <div className="flex items-baseline gap-2 text-sm">
+            <button
+              type="button"
+              aria-pressed={!isPast}
+              onClick={() => {
+                showView(false);
+              }}
+              className={`cursor-pointer ${isPast ? "hover:underline" : "underline"}`}
+            >
+              Current
+            </button>
+            <span aria-hidden="true">/</span>
+            <button
+              type="button"
+              aria-pressed={isPast}
+              onClick={() => {
+                showView(true);
+              }}
+              className={`cursor-pointer ${isPast ? "underline" : "hover:underline"}`}
+            >
+              Past
+            </button>
+          </div>
+        }
       />
       <ItemToolbar
         items={typeItems}
@@ -94,17 +113,22 @@ export const Wardrobe = () => {
         sortOptions={ITEM_SORT_OPTIONS}
         sortValue={sortOption}
         onSortChange={setSortOption}
+        search={search}
+        onSearchChange={setSearch}
+        searchLabel={isPast ? "Search past items" : "Search wardrobe"}
         action={
-          <button
-            ref={addItemButtonRef}
-            type="button"
-            onClick={() => {
-              setAddingItem(true);
-            }}
-            className="cursor-pointer border border-black bg-black px-2 py-1 text-xs text-white transition-colors hover:bg-white hover:text-black"
-          >
-            Add Item
-          </button>
+          !isPast && (
+            <button
+              ref={addItemButtonRef}
+              type="button"
+              onClick={() => {
+                setAddingItem(true);
+              }}
+              className="cursor-pointer border border-black bg-black px-2 py-1 text-xs text-white transition-colors hover:bg-white hover:text-black"
+            >
+              Add Item
+            </button>
+          )
         }
       />
       <AnimatePresence>
@@ -120,43 +144,30 @@ export const Wardrobe = () => {
         )}
       </AnimatePresence>
       <div>
-        {clothingItems.length === 0 ? (
-          <p className="mt-4 text-gray-500 text-sm">No clothing items found.</p>
+        {isLoading ? (
+          <p className="mt-4 text-gray-500 text-sm">Loading...</p>
+        ) : clothingItems.length === 0 ? (
+          <p className="mt-4 text-gray-500 text-sm">
+            {isPast
+              ? "No past items. Items you sell, donate or remove from your wardrobe will show up here."
+              : "No clothing items found."}
+          </p>
         ) : filteredItems.length === 0 ? (
           <p className="mt-4 text-gray-500 text-sm">
-            {countActiveFilters(filters) > 0
-              ? "No clothing items match these filters."
-              : "No clothing items of this type."}
+            {search.trim()
+              ? `No clothing items match "${search.trim()}".`
+              : countActiveFilters(filters) > 0
+                ? "No clothing items match these filters."
+                : "No clothing items of this type."}
           </p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-2 mt-4">
             {filteredItems.map((item) => (
-              <ClothingItemCard
-                key={item.id}
-                item={item}
-                onDelete={() => {
-                  setConfirmingId(item.id);
-                  setDeleteError(null);
-                }}
-              />
+              <ClothingItemCard key={item.id} item={item} />
             ))}
           </div>
         )}
       </div>
-
-      {confirmingId !== null && (
-        <DeleteDialog
-          noun="item"
-          isDeleting={isDeleting}
-          error={deleteError}
-          onConfirm={() => {
-            void handleDelete(confirmingId);
-          }}
-          onCancel={() => {
-            setConfirmingId(null);
-          }}
-        />
-      )}
     </div>
   );
 };

@@ -12,6 +12,7 @@ import { ExpandedLayout } from "../../components/expanded/ExpandedLayout";
 import { ItemDetails, ItemHeader } from "../../components/expanded/ItemSummary";
 import { OwnerInfo } from "../../components/expanded/OwnerInfo";
 import { EditListingForm } from "../../components/expanded/edit/EditListingForm";
+import { SoldItemPrompt } from "../../components/expanded/edit/SoldItemPrompt";
 import { Toast } from "../../components/ui/Toast";
 import type { ListingDetail } from "../../types/ListingItem";
 import { fetchListingById, updateListingSaved } from "../../api/listings";
@@ -34,7 +35,12 @@ export const ListingItemExpanded = () => {
   const [draft, setDraft] = useState<string>(DEFAULT_MESSAGE);
   const [isSending, setIsSending] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
+  // which form, if any, has taken over the side panel; "sold" offers to move
+  // the item to past items right after the seller marks it as sold
+  const [panelMode, setPanelMode] = useState<"edit" | "sold" | null>(null);
+  const closePanel = () => {
+    setPanelMode(null);
+  };
   const saved = useSavedToggle((isSaved) => {
     if (!item) return Promise.resolve(isSaved);
     return updateListingSaved(item.id, isSaved);
@@ -123,19 +129,39 @@ export const ListingItemExpanded = () => {
       closePath="/listings"
       overlays={<Toast message={toastMessage} onClose={closeToast} />}
       panel={
-        isEditing && (
+        panelMode === "edit" ? (
           <EditListingForm
             listing={item}
-            onClose={() => {
-              setIsEditing(false);
-            }}
+            onClose={closePanel}
             onSaved={(updated) => {
+              const justSold =
+                updated.status === "sold" &&
+                item.status !== "sold" &&
+                !updated.item_archived_at;
               setItem(updated);
-              setIsEditing(false);
-              setToastMessage("Changes saved");
+              if (justSold) {
+                setPanelMode("sold");
+              } else {
+                closePanel();
+                setToastMessage("Changes saved");
+              }
             }}
           />
-        )
+        ) : panelMode === "sold" ? (
+          <SoldItemPrompt
+            itemId={item.clothing_item_id}
+            itemName={item.name}
+            onClose={() => {
+              closePanel();
+              setToastMessage("Marked as sold");
+            }}
+            onArchived={() => {
+              setItem({ ...item, item_archived_at: new Date().toISOString() });
+              closePanel();
+              setToastMessage("Marked as sold and moved to past items");
+            }}
+          />
+        ) : undefined
       }
       footer={
         // sellers can't message themselves about their own listing, so they
@@ -199,7 +225,7 @@ export const ListingItemExpanded = () => {
           <button
             type="button"
             onClick={() => {
-              setIsEditing(true);
+              setPanelMode("edit");
             }}
             className={primaryButtonClass}
           >

@@ -111,3 +111,21 @@ export const toggleFilterValue = (
 
 export const countActiveFilters = (filters: ItemFilters) =>
   Object.values(filters).reduce((total, values) => total + values.length, 0);
+
+export type SearchableItem = {
+  name: string;
+  brand?: string | null;
+  type?: string | null;
+  color?: string | null;
+};
+
+/** Whether the search box text appears in the item's name, brand, type or colour */
+export const matchesSearch = (item: SearchableItem, search: string) => {
+  const query = normalize(search);
+  return (
+    query === "" ||
+    [item.name, item.brand, item.type, item.color].some((field) =>
+      normalize(field).includes(query),
+    )
+  );
+};

@@ -59,7 +59,11 @@ const ArrowIcon = () => (
     className="size-4 transition-transform duration-300 group-hover:translate-x-1"
     aria-hidden
   >
-    <path d="M4 10h12m-5-5 5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
+    <path
+      d="M4 10h12m-5-5 5 5-5 5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 

@@ -128,14 +128,18 @@ router.get("/get", verifyToken, async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // optional ?favourite=true to only return favourited items
+    // optional ?favourite=true to only return favourited items, and
+    // ?archived=true for past items (no longer owned) instead of current ones
     const favouritesOnly = req.query.favourite === "true";
-    console.log(favouritesOnly);
+    const archivedOnly = req.query.archived === "true";
 
     const [rows] = await pool.execute(
-      `SELECT * FROM clothing_items WHERE user_id = ?${
-        favouritesOnly ? " AND is_favourite = 1" : ""
-      }`,
+      `SELECT * FROM clothing_items
+      WHERE user_id = ?
+        AND archived_at IS ${archivedOnly ? "NOT NULL" : "NULL"}${
+          favouritesOnly ? " AND is_favourite = 1" : ""
+        }
+      ORDER BY ${archivedOnly ? "archived_at DESC" : "created_at DESC"}`,
       [userId],
     );
 
@@ -155,7 +159,12 @@ const fetchOwnItem = async (itemId: string | number, userId: number) => {
     SELECT
       ci.*,
       l.id AS listing_id,
-      l.status AS listing_status
+      l.status AS listing_status,
+      (
+        SELECT COUNT(*)
+        FROM outfit_items oi
+        WHERE oi.clothing_item_id = ci.id
+      ) AS outfit_count
     FROM clothing_items ci
     LEFT JOIN listings l ON l.id = (
       SELECT MAX(latest.id)
@@ -216,7 +225,7 @@ router.put("/:id", verifyToken, async (req, res) => {
       `
       UPDATE clothing_items
       SET name = ?, brand = ?, type = ?, color = ?, size = ?, description = ?
-      WHERE id = ? AND user_id = ?
+      WHERE id = ? AND user_id = ? AND archived_at IS NULL
       `,
       [
         values.name,
@@ -232,7 +241,12 @@ router.put("/:id", verifyToken, async (req, res) => {
 
     if (result.affectedRows === 0) {
       await connection.rollback();
-      return res.status(404).json({ message: "Item not found." });
+      const item = await fetchOwnItem(itemId, userId);
+      return item
+        ? res
+            .status(409)
+            .json({ message: "Restore this item to your wardrobe to edit it." })
+        : res.status(404).json({ message: "Item not found." });
     }
 
     await connection.commit();
@@ -248,23 +262,122 @@ router.put("/:id", verifyToken, async (req, res) => {
   }
 });
 
-interface ClothingItemRow extends RowDataPacket {
-  id: number;
-  image_public_id: string | null;
-}
+const ARCHIVE_REASONS = ["sold", "donated", "discarded", "other"] as const;
+type ArchiveReason = (typeof ARCHIVE_REASONS)[number];
 
-router.delete("/:id", verifyToken, async (req, res) => {
+const parseItemId = (raw: unknown) => {
+  const id = Number(raw);
+  return Number.isInteger(id) && id > 0 ? id : null;
+};
+
+// moves an item to the user's past items: it leaves the wardrobe but stays in
+// its outfits, and any listing still up for sale is taken down
+router.put("/:id/archive", verifyToken, async (req, res) => {
+  const userId = req.user!.id;
+  const itemId = parseItemId(req.params.id);
+  const reason = req.body?.reason as ArchiveReason;
+
+  if (itemId === null) {
+    return res.status(400).json({ message: "Invalid item id." });
+  }
+
+  if (!ARCHIVE_REASONS.includes(reason)) {
+    return res.status(400).json({ message: "Choose why the item is gone." });
+  }
+
+  const connection = await pool.getConnection();
+
   try {
-    const userId = req.user?.id;
-    const itemId = req.params.id;
+    await connection.beginTransaction();
 
-    if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
+    // archiving again only changes the reason, keeping the original date
+    const [result] = await connection.query<ResultSetHeader>(
+      `
+      UPDATE clothing_items
+      SET archived_at = COALESCE(archived_at, NOW()), archive_reason = ?
+      WHERE id = ? AND user_id = ?
+      `,
+      [reason, itemId, userId],
+    );
+
+    if (result.affectedRows === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Item not found." });
     }
 
+    await connection.query(
+      `
+      UPDATE listings
+      SET status = 'cancelled'
+      WHERE clothing_item_id = ? AND status IN ('active', 'pending')
+      `,
+      [itemId],
+    );
+
+    await connection.commit();
+
+    return res.status(200).json(await fetchOwnItem(itemId, userId));
+  } catch (err) {
+    await connection.rollback();
+    console.error("Error archiving clothing item:", err);
+
+    return res.status(500).json({ message: "Failed to remove item." });
+  } finally {
+    connection.release();
+  }
+});
+
+// brings a past item back into the wardrobe; its listings stay as they were
+router.put("/:id/restore", verifyToken, async (req, res) => {
+  const userId = req.user!.id;
+  const itemId = parseItemId(req.params.id);
+
+  if (itemId === null) {
+    return res.status(400).json({ message: "Invalid item id." });
+  }
+
+  try {
+    const [result] = await pool.query<ResultSetHeader>(
+      `
+      UPDATE clothing_items
+      SET archived_at = NULL, archive_reason = NULL
+      WHERE id = ? AND user_id = ?
+      `,
+      [itemId, userId],
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Item not found." });
+    }
+
+    return res.status(200).json(await fetchOwnItem(itemId, userId));
+  } catch (err) {
+    console.error("Error restoring clothing item:", err);
+
+    return res.status(500).json({ message: "Failed to restore item." });
+  }
+});
+
+interface ClothingItemRow extends RowDataPacket {
+  image_public_id: string | null;
+  archived_at: Date | null;
+}
+
+// permanent: removes the item from its outfits and takes its listings and
+// their conversations with it (the database cascades). Only past items can be
+// deleted, so nothing disappears from outfits without first being archived
+router.delete("/:id", verifyToken, async (req, res) => {
+  const userId = req.user!.id;
+  const itemId = parseItemId(req.params.id);
+
+  if (itemId === null) {
+    return res.status(400).json({ message: "Invalid item id." });
+  }
+
+  try {
     const [rows] = await pool.execute<ClothingItemRow[]>(
       `
-      SELECT image_public_id
+      SELECT image_public_id, archived_at
       FROM clothing_items
       WHERE id = ? AND user_id = ?
       `,
@@ -275,22 +388,27 @@ router.delete("/:id", verifyToken, async (req, res) => {
       return res.status(404).json({ message: "Clothing item not found" });
     }
 
-    const imagePublicId = rows[0].image_public_id;
-
-    if (imagePublicId) {
-      console.log(
-        `Deleting image from Cloudinary with public ID: ${imagePublicId}`,
-      );
-      await cloudinary.uploader.destroy(imagePublicId);
+    if (rows[0].archived_at === null) {
+      return res.status(409).json({
+        message: "Remove this item from your wardrobe before deleting it.",
+      });
     }
 
-    const [result] = await pool.execute<ResultSetHeader>(
+    await pool.execute<ResultSetHeader>(
       `
       DELETE FROM clothing_items
       WHERE id = ? AND user_id = ?
       `,
       [itemId, userId],
     );
+
+    // the row is gone, so a failed image cleanup only leaves an orphaned file
+    const imagePublicId = rows[0].image_public_id;
+    if (imagePublicId) {
+      await cloudinary.uploader.destroy(imagePublicId).catch((err: unknown) => {
+        console.error("Unable to delete item image:", err);
+      });
+    }
 
     return res.status(200).json({
       message: "Clothing item and image deleted successfully",
@@ -317,7 +435,7 @@ router.post("/create-listing", verifyToken, async (req, res) => {
       `
   SELECT id
   FROM clothing_items
-  WHERE id = ? AND user_id = ?
+  WHERE id = ? AND user_id = ? AND archived_at IS NULL
   `,
       [clothingItemId, userId],
     );

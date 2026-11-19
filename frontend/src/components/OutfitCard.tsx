@@ -1,23 +1,19 @@
+import {
+  Card,
+  CardBadge,
+  CardBody,
+  CardBookmark,
+  CardDetail,
+  CardImage,
+} from "./CardParts";
 import type { Outfit } from "../types/Outfit";
-import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-import BookmarkIcon from "@mui/icons-material/Bookmark";
-import IconButton from "@mui/material/IconButton";
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { updateOutfitFavourite } from "../api/outfits";
-import { CardDeleteButton } from "./CardDeleteButton";
 
 // the cover shows up to this many item images in a 2x2 grid
 const MAX_PREVIEW_ITEMS = 4;
 
-export const OutfitCard = ({
-  outfit,
-  onDelete,
-}: {
-  outfit: Outfit;
-  /** Shows a delete button on the card image when provided */
-  onDelete?: () => void;
-}) => {
+export const OutfitCard = ({ outfit }: { outfit: Outfit }) => {
   const [isFavourite, setIsFavourite] = useState(outfit.is_favourite);
   const [isUpdatingFavourite, setIsUpdatingFavourite] = useState(false);
 
@@ -43,14 +39,23 @@ export const OutfitCard = ({
 
   const previewItems = outfit.items.slice(0, MAX_PREVIEW_ITEMS);
   const hiddenCount = outfit.items.length - previewItems.length;
+  const pastItemCount = outfit.items.filter((item) => item.archived_at).length;
+
+  const name = outfit.name ?? "Untitled Outfit";
 
   return (
-    <div className="mb-10">
-      <div className="group relative mb-1 border border-transparent p-0.5 transition-colors hover:border-black has-focus-visible:border-black">
-        <Link
-          to={`/outfits/${outfit.id}`}
-          aria-label={`View ${outfit.name ?? "outfit"}`}
-          className={`relative grid aspect-11/15 gap-px overflow-hidden bg-gray-200 ${
+    <Card>
+      <CardImage
+        to={`/outfits/${outfit.id}`}
+        label={`View ${name}`}
+        badge={
+          hiddenCount > 0 && (
+            <CardBadge position="bottom-right">+{hiddenCount} more</CardBadge>
+          )
+        }
+      >
+        <div
+          className={`grid h-full w-full gap-px bg-gray-200 ${
             previewItems.length > 1 ? "grid-cols-2" : "grid-cols-1"
           } ${previewItems.length > 2 ? "grid-rows-2" : "grid-rows-1"}`}
         >
@@ -59,52 +64,37 @@ export const OutfitCard = ({
               key={item.id}
               src={item.image_url}
               alt={item.name}
-              // with 3 items the first one spans the full top row
-              className={`h-full w-full object-cover ${
+              // with 3 items the first one spans the full top row; items no
+              // longer in the wardrobe are faded
+              className={`h-full w-full min-h-0 object-cover ${
                 previewItems.length === 3 && index === 0 ? "col-span-2" : ""
-              }`}
+              } ${item.archived_at ? "opacity-50 grayscale" : ""}`}
             />
           ))}
-          {hiddenCount > 0 && (
-            <span className="absolute bottom-2 right-2 rounded bg-white px-2 py-1 text-xs shadow">
-              +{hiddenCount} more
-            </span>
-          )}
-        </Link>
-        {onDelete && (
-          <CardDeleteButton
-            label={`Delete ${outfit.name ?? "outfit"}`}
-            onClick={onDelete}
+        </div>
+      </CardImage>
+      <CardBody
+        title={name}
+        aside={
+          <CardBookmark
+            isOn={isFavourite}
+            disabled={isUpdatingFavourite}
+            label={
+              isFavourite
+                ? `Remove ${name} from favourites`
+                : `Add ${name} to favourites`
+            }
+            onToggle={() => {
+              void handleFavourite();
+            }}
           />
-        )}
-      </div>
-      <div className="flex justify-between items-center">
-        <h2 className="text-sm font-semibold">
-          <Link to={`/outfits/${outfit.id}`} className="hover:underline">
-            {outfit.name ?? "Untitled Outfit"}
-          </Link>
-        </h2>
-        <IconButton
-          aria-label={
-            isFavourite
-              ? "Remove outfit from favourites"
-              : "Add outfit to favourites"
-          }
-          disabled={isUpdatingFavourite}
-          onClick={() => {
-            handleFavourite();
-          }}
-        >
-          {isFavourite ? (
-            <BookmarkIcon fontSize="small" />
-          ) : (
-            <BookmarkBorderIcon />
-          )}
-        </IconButton>
-      </div>
-      <p className="text-xs text-gray-600">
-        {outfit.items.length} {outfit.items.length === 1 ? "item" : "items"}
-      </p>
-    </div>
+        }
+      >
+        <CardDetail>
+          {outfit.items.length} {outfit.items.length === 1 ? "item" : "items"}
+          {pastItemCount > 0 && ` · ${pastItemCount} no longer owned`}
+        </CardDetail>
+      </CardBody>
+    </Card>
   );
 };

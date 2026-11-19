@@ -24,6 +24,7 @@ import {
   OUTFIT_FILTER_FIELDS,
   getOutfitFilterableItems,
   matchesFilters,
+  matchesSearch,
   outfitMatchesFilters,
   type FilterField,
   type FilterableItem,
@@ -96,6 +97,7 @@ function SavedTab<Saved extends { id: number }, SortValue extends string>({
   compare,
   getFilterableItems,
   matches,
+  searchMatches,
   renderCard,
 }: {
   load: () => Promise<Saved[]>;
@@ -108,6 +110,8 @@ function SavedTab<Saved extends { id: number }, SortValue extends string>({
   /** What the filter options are built from */
   getFilterableItems: (saved: Saved) => FilterableItem[];
   matches: (saved: Saved, filters: ItemFilters) => boolean;
+  /** Shows a search box, keeping the cards this returns true for */
+  searchMatches?: (saved: Saved, search: string) => boolean;
   renderCard: (saved: Saved) => ReactNode;
 }) {
   const [saved, setSaved] = useState<Saved[]>([]);
@@ -115,6 +119,7 @@ function SavedTab<Saved extends { id: number }, SortValue extends string>({
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortValue>(sortOptions[0].value);
   const [filters, setFilters] = useState<ItemFilters>(EMPTY_FILTERS);
+  const [search, setSearch] = useState<string>("");
   const { setSavedCount } = useOutletContext<FavouritesContext>();
 
   useEffect(() => {
@@ -137,7 +142,11 @@ function SavedTab<Saved extends { id: number }, SortValue extends string>({
   }, [load, noun]);
 
   const visibleSaved = saved
-    .filter((entry) => matches(entry, filters))
+    .filter(
+      (entry) =>
+        matches(entry, filters) &&
+        (!searchMatches || searchMatches(entry, search)),
+    )
     .sort((a, b) => compare(a, b, sortOption));
 
   return (
@@ -152,6 +161,9 @@ function SavedTab<Saved extends { id: number }, SortValue extends string>({
         sortOptions={sortOptions}
         sortValue={sortOption}
         onSortChange={setSortOption}
+        search={search}
+        onSearchChange={searchMatches ? setSearch : undefined}
+        searchLabel={`Search saved ${noun}`}
       />
 
       {isLoading ? (
@@ -162,7 +174,11 @@ function SavedTab<Saved extends { id: number }, SortValue extends string>({
         <p className="mt-4 text-sm text-gray-500">No saved {noun} yet.</p>
       ) : visibleSaved.length === 0 ? (
         <p className="mt-4 text-sm text-gray-500">
-          No saved {noun} match these filters.
+          No saved {noun} match{" "}
+          {searchMatches && search.trim()
+            ? `"${search.trim()}"`
+            : "these filters"}
+          .
         </p>
       ) : (
         <div className="mt-4 grid grid-cols-2 gap-x-2 md:grid-cols-3 lg:grid-cols-4">
@@ -173,7 +189,7 @@ function SavedTab<Saved extends { id: number }, SortValue extends string>({
   );
 }
 
-const loadSavedItems = () => fetchClothingItems(true);
+const loadSavedItems = () => fetchClothingItems({ favouritesOnly: true });
 const loadSavedListings = () => fetchAllListings(true);
 const loadSavedOutfits = () => fetchOutfits(true);
 
@@ -197,6 +213,7 @@ export const SavedItems = () => (
     compare={compareItems}
     getFilterableItems={asFilterableItems}
     matches={matchesFilters}
+    searchMatches={matchesSearch}
     renderCard={renderItem}
   />
 );
@@ -209,6 +226,7 @@ export const SavedListings = () => (
     compare={compareListings}
     getFilterableItems={asFilterableItems}
     matches={matchesFilters}
+    searchMatches={matchesSearch}
     renderCard={renderListing}
   />
 );

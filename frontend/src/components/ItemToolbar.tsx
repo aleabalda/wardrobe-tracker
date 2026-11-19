@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { FilterDrawer } from "./FilterDrawer";
 import { SortMenu } from "./SortMenu";
+import { SearchField } from "./SearchField";
 import {
   EMPTY_FILTERS,
   FILTER_FIELDS,
@@ -27,6 +28,9 @@ export function ItemToolbar<SortValue extends string>({
   sortValue,
   onSortChange,
   action,
+  search,
+  onSearchChange,
+  searchLabel = "Search",
 }: {
   /** The items the filter options are built from */
   items: FilterableItem[];
@@ -43,6 +47,11 @@ export function ItemToolbar<SortValue extends string>({
   onSortChange: (value: SortValue) => void;
   /** Page action shown before the filters, e.g. an add button */
   action?: ReactNode;
+  /** The search box text; the box is only shown when onSearchChange is given */
+  search?: string;
+  onSearchChange?: (search: string) => void;
+  /** e.g. "Search listings" */
+  searchLabel?: string;
 }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   // the only section expanded when the drawer opens; null expands all of them
@@ -117,12 +126,22 @@ export function ItemToolbar<SortValue extends string>({
         )}
       </div>
 
-      <SortMenu
-        options={sortOptions}
-        value={sortValue}
-        onChange={onSortChange}
-        panelClassName="right-0"
-      />
+      <div className="flex items-center gap-3">
+        {onSearchChange && (
+          <SearchField
+            value={search ?? ""}
+            onChange={onSearchChange}
+            label={searchLabel}
+            className="w-48 sm:w-60"
+          />
+        )}
+        <SortMenu
+          options={sortOptions}
+          value={sortValue}
+          onChange={onSortChange}
+          panelClassName="right-0"
+        />
+      </div>
 
       <FilterDrawer
         isOpen={isDrawerOpen}

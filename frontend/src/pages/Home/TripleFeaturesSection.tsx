@@ -32,18 +32,23 @@ export const TripleFeaturesSection = () => {
         <div className="flex flex-col gap-4">
           <Eyebrow>Everything in one place</Eyebrow>
           <h2 className="max-w-xl font-display text-4xl leading-tight font-bold text-neutral-900 sm:text-5xl">
-            Everything your closet <span className="italic text-amber-600">needs.</span>
+            Everything your closet{" "}
+            <span className="italic text-amber-600">needs.</span>
           </h2>
         </div>
         <p className="max-w-sm text-neutral-600">
-          From cataloguing to styling to selling, Rehang covers the whole
-          life of your clothes.
+          From cataloguing to styling to selling, Rehang covers the whole life
+          of your clothes.
         </p>
       </Reveal>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {FEATURES.map((feature, i) => (
-          <Reveal key={feature.headline} delay={i * 0.1} className={`flex ${feature.className}`}>
+          <Reveal
+            key={feature.headline}
+            delay={i * 0.1}
+            className={`flex ${feature.className}`}
+          >
             <FeatureCard
               index={i + 1}
               image={feature.image}

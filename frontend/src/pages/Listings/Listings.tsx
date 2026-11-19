@@ -1,4 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AnimatePresence } from "motion/react";
+import { CreateNewListingForm } from "../../components/CreateNewListingForm";
 import { fetchAllListings } from "../../api/listings";
 import type { ListingItem } from "../../types/ListingItem";
 import { ListingItemCard } from "../../components/ListingItemCard";
@@ -25,7 +28,25 @@ export const Listings = () => {
     useState<ClothingType>("All Clothing");
   const [sortOption, setSortOption] = useState<ListingSortOption>("newest");
   const [filters, setFilters] = useState<ItemFilters>(EMPTY_FILTERS);
+  const [creatingListing, setCreatingListing] = useState<boolean>(false);
+  const createListingButtonRef = useRef<HTMLButtonElement>(null);
   const { auth } = useAuth();
+  const navigate = useNavigate();
+
+  // items the user already has up for sale, so they can't be listed twice
+  const listedItemIds = useMemo(
+    () =>
+      new Set(
+        listings
+          .filter(
+            (item) =>
+              item.seller_id === auth.userId &&
+              (item.status === "active" || item.status === "pending"),
+          )
+          .map((item) => item.clothing_item_id),
+      ),
+    [listings, auth.userId],
+  );
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -98,7 +119,11 @@ export const Listings = () => {
         action={
           !isShopping && (
             <button
+              ref={createListingButtonRef}
               type="button"
+              onClick={() => {
+                setCreatingListing(true);
+              }}
               className="cursor-pointer px-2 py-1 text-xs bg-black text-white transition-colors hover:bg-white hover:text-black hover:outline hover:outline-black"
             >
               Create Listing
@@ -106,6 +131,20 @@ export const Listings = () => {
           )
         }
       />
+      <AnimatePresence>
+        {creatingListing && (
+          <CreateNewListingForm
+            listedItemIds={listedItemIds}
+            onClose={() => {
+              setCreatingListing(false);
+              createListingButtonRef.current?.focus();
+            }}
+            onCreated={(listingId: number) => {
+              void navigate(`/listings/${listingId}`);
+            }}
+          />
+        )}
+      </AnimatePresence>
       <div>
         {filteredListings.length === 0 ? (
           <p className="mt-4 text-gray-500 text-sm">

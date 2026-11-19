@@ -9,6 +9,18 @@ import {
   CLOTHING_TYPES,
   type ClothingType,
 } from "../../types/clothingItemTypes";
+import { ItemToolbar } from "../../components/ItemToolbar";
+import {
+  EMPTY_FILTERS,
+  matchesFilters,
+  matchesSearch,
+  type ItemFilters,
+} from "../../utils/itemFilters";
+import {
+  ITEM_SORT_OPTIONS,
+  compareItems,
+  type ItemSortOption,
+} from "../../utils/sortOptions";
 
 type OutfitCategory = Exclude<ClothingType, "All Clothing">;
 
@@ -35,6 +47,9 @@ export const CreateOutfit = () => {
   );
   const [selectedSeasons, setSelectedSeasons] = useState<OutfitSeason[]>([]);
   const [activeStep, setActiveStep] = useState<number>(0);
+  const [search, setSearch] = useState<string>("");
+  const [filters, setFilters] = useState<ItemFilters>(EMPTY_FILTERS);
+  const [sortOption, setSortOption] = useState<ItemSortOption>("newest");
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,10 +74,28 @@ export const CreateOutfit = () => {
 
   const activeCategory = OUTFIT_CATEGORIES[activeStep];
   const isMultiSelect = MULTI_SELECT_CATEGORIES.includes(activeCategory);
-  // only the current step's items are rendered
+  // only the current step's items are rendered, narrowed by search and filters
   const activeItems = clothingItems.filter(
     (item) => item.type === activeCategory,
   );
+  const visibleItems = activeItems
+    .filter(
+      (item) => matchesFilters(item, filters) && matchesSearch(item, search),
+    )
+    .sort((a, b) => compareItems(a, b, sortOption));
+
+  // search and filters belong to one step (gray pants doesn't mean gray
+  // shoes), so they're cleared when moving on; the sort order carries over
+  const goToStep = (step: number) => {
+    setActiveStep(step);
+    setSearch("");
+    setFilters(EMPTY_FILTERS);
+  };
+
+  const clearSearchAndFilters = () => {
+    setSearch("");
+    setFilters(EMPTY_FILTERS);
+  };
 
   const toggleItem = (item: ClothingItem) => {
     if (selectedIds.includes(item.id)) {
@@ -152,7 +185,7 @@ export const CreateOutfit = () => {
                   type="button"
                   aria-current={index === activeStep ? "step" : undefined}
                   onClick={() => {
-                    setActiveStep(index);
+                    goToStep(index);
                   }}
                   className={`cursor-pointer text-xs hover:underline ${
                     index === activeStep ? "underline" : "text-gray-500"
@@ -179,13 +212,41 @@ export const CreateOutfit = () => {
             </p>
           </div>
           <div className="w-full h-px rounded bg-black mb-4"></div>
+          {activeItems.length > 0 && (
+            <ItemToolbar
+              items={activeItems}
+              filters={filters}
+              onFiltersChange={setFilters}
+              resultCount={visibleItems.length}
+              sortOptions={ITEM_SORT_OPTIONS}
+              sortValue={sortOption}
+              onSortChange={setSortOption}
+              search={search}
+              onSearchChange={setSearch}
+              searchLabel={`Search ${activeCategory.toLowerCase()}`}
+            />
+          )}
           {activeItems.length === 0 ? (
             <p className="text-sm text-gray-500">
               No clothing items of this type.
             </p>
+          ) : visibleItems.length === 0 ? (
+            <p className="mt-4 text-sm text-gray-500">
+              {search.trim()
+                ? `No ${activeCategory.toLowerCase()} match "${search.trim()}"`
+                : `No ${activeCategory.toLowerCase()} match these filters`}
+              .{" "}
+              <button
+                type="button"
+                onClick={clearSearchAndFilters}
+                className="cursor-pointer text-black underline"
+              >
+                Clear {search.trim() ? "search and filters" : "filters"}
+              </button>
+            </p>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {activeItems.map((item) => {
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {visibleItems.map((item) => {
                 const isSelected = selectedIds.includes(item.id);
 
                 return (
@@ -225,7 +286,7 @@ export const CreateOutfit = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setActiveStep(activeStep - 1);
+                  goToStep(activeStep - 1);
                 }}
                 className="cursor-pointer underline text-sm"
               >
@@ -236,7 +297,7 @@ export const CreateOutfit = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setActiveStep(activeStep + 1);
+                  goToStep(activeStep + 1);
                 }}
                 className="cursor-pointer underline text-sm"
               >
